@@ -748,7 +748,7 @@
       <div class="loader-orbit" aria-hidden="true"><span class="font-heading font-bold text-sky-400">MA</span></div>
       <p class="font-mono-code text-xs font-semibold uppercase tracking-widest text-sky-400 mb-1.5">MarketAura Quantitative Core</p>
       <h2 id="loader-title" class="font-heading text-2xl sm:text-3xl font-bold text-white">Analyzing Industry &amp; Regional Landscape</h2>
-      <p id="loader-step-text" class="text-sm sm:text-base text-slate-400 mt-2 leading-relaxed">Running Option A (Live Web Scraper) + Option B (LLM / Knowledge API)...</p>
+      <p id="loader-step-text" class="text-sm sm:text-base text-slate-400 mt-2 leading-relaxed">Scraping live industry telemetry via Google Custom Search API & Gemini Grounding...</p>
       <div class="loader-track" role="presentation"><div id="loader-bar"></div></div>
       <div class="flex items-center justify-between mt-4 text-[11px] font-mono-code text-slate-400 uppercase">
         <span id="loader-phase">STAGE 01 // DUAL-SOURCE EXTRACTION</span>
@@ -1223,41 +1223,52 @@
         </button>
       </div>
 
-      <!-- 1. Option B (LLM / Knowledge API) Live Key Configuration -->
+      <!-- 1. Google API Initial Scraping + Option B LLM Configuration -->
       <div class="exec-panel rounded-2xl p-6 border border-indigo-500/30">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
-            <span class="text-[11px] font-mono-code uppercase tracking-wider text-indigo-400 block">Option B // Live LLM &amp; Knowledge API Bridge</span>
-            <h3 class="font-heading text-lg font-bold text-white">Configure Optional Groq / Gemini Flash API Key for Real-Time Synthesis</h3>
+            <span class="text-[11px] font-mono-code uppercase tracking-wider text-indigo-400 block">Primary Data Ingestion // Google Custom Search JSON API &amp; Gemini Grounding</span>
+            <h3 class="font-heading text-lg font-bold text-white">Configure Google API for Initial Live Web Scraping &amp; LLM Synthesis</h3>
           </div>
-          <span id="option-b-key-status" class="text-xs font-mono-code bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full">Autonomous Consensus Active</span>
+          <span id="option-b-key-status" class="text-xs font-mono-code bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full">Google News RSS + Autonomous Mode Active</span>
         </div>
         <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-          MarketAura works out-of-the-box with zero API keys using its built-in Game Theory Knowledge Graph + Live Wikipedia/Web Scraper. Optionally provide a free <strong>Groq API Key</strong> (<code>gsk_...</code>) or <strong>Google Gemini API Key</strong> (<code>AIza...</code>) below (or in backend <code>.env</code>) to stream live LLM venture synthesis and compare its reliability against Option A.
+          MarketAura uses <strong>Google APIs</strong> for initial data scraping instead of DuckDuckGo or Wikipedia. Provide your <strong>Google API Key</strong> (<code>AIza...</code>) and <strong>Google Programmable Search Engine CX ID</strong> below (or in backend <code>.env</code> as <code>GOOGLE_API_KEY</code> and <code>GOOGLE_CSE_ID</code>) to scrape live market share, company rankings, and product launches directly via the official <strong>Google Custom Search JSON API</strong> &amp; <strong>Google Gemini Search Grounding</strong>.
         </p>
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs mb-3">
           <div class="md:col-span-3">
+            <label class="block font-mono-code text-[10px] uppercase text-slate-400 mb-1">Primary Engine / Provider</label>
             <select id="llm-provider-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 font-mono-code">
-              <option value="groq">Groq API (Llama-3.3-70B)</option>
-              <option value="gemini">Google Gemini 2.5 Flash</option>
+              <option value="gemini" selected>Google API (Custom Search + Gemini Grounding)</option>
+              <option value="groq">Google Search API + Groq (Llama-3.3-70B)</option>
             </select>
           </div>
-          <div class="md:col-span-6">
+          <div class="md:col-span-5">
+            <label class="block font-mono-code text-[10px] uppercase text-slate-400 mb-1">Google API Key (AIza...) or Groq Key</label>
             <input
               id="llm-api-key-input"
               type="password"
-              placeholder="Paste optional Groq (gsk_...) or Gemini (AIza...) API key..."
+              placeholder="Paste GOOGLE_API_KEY (AIza...) for Google Search & Gemini..."
               class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-100 font-mono-code focus:outline-none focus:border-indigo-400"
             />
           </div>
-          <div class="md:col-span-3 flex gap-2">
-            <button type="button" onclick="saveLlmApiKey()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-mono-code font-semibold rounded-xl px-3 py-2.5 cursor-pointer transition">
-              Save Key
-            </button>
-            <button type="button" onclick="clearLlmApiKey()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono-code rounded-xl px-3 py-2.5 cursor-pointer transition">
-              Clear
-            </button>
+          <div class="md:col-span-4">
+            <label class="block font-mono-code text-[10px] uppercase text-slate-400 mb-1">Google Custom Search Engine ID (CX)</label>
+            <input
+              id="google-cse-id-input"
+              type="text"
+              placeholder="Optional GOOGLE_CSE_ID (cx=...)..."
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-100 font-mono-code focus:outline-none focus:border-sky-400"
+            />
           </div>
+        </div>
+        <div class="flex justify-end gap-2 text-xs">
+          <button type="button" onclick="saveLlmApiKey()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-mono-code font-semibold rounded-xl px-5 py-2.5 cursor-pointer transition">
+            Save Google API Credentials
+          </button>
+          <button type="button" onclick="clearLlmApiKey()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono-code rounded-xl px-4 py-2.5 cursor-pointer transition">
+            Clear Keys
+          </button>
         </div>
       </div>
 
@@ -1289,7 +1300,7 @@
 
       <!-- 3. Option A vs Option B Comparison -->
       <div class="exec-panel rounded-2xl p-6">
-        <h3 class="font-heading text-lg font-bold text-white mb-2">3. Option A (Web/Wikipedia Scraper) vs. Option B (LLM / Knowledge API) Comparison</h3>
+        <h3 class="font-heading text-lg font-bold text-white mb-2">3. Option A (Google Custom Search JSON API Scraper) vs. Option B (Gemini Grounded LLM API) Comparison</h3>
         <p id="dual-verdict-banner" class="text-xs font-mono-code text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 p-3 rounded-xl mb-4"></p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs" id="dual-engines-grid"></div>
       </div>
@@ -1723,8 +1734,9 @@
     // =========================================================================
     function getStoredLlmConfig() {
       return {
-        provider: localStorage.getItem('marketaura_llm_provider') || 'groq',
-        apiKey: localStorage.getItem('marketaura_llm_key') || ''
+        provider: localStorage.getItem('marketaura_llm_provider') || 'gemini',
+        apiKey: localStorage.getItem('marketaura_llm_key') || '',
+        googleCseId: localStorage.getItem('marketaura_google_cse_id') || ''
       };
     }
 
@@ -1733,21 +1745,24 @@
       const badge = document.getElementById('option-b-key-status');
       const sidebarStatus = document.getElementById('sidebar-engine-status');
       if (cfg.apiKey) {
-        badge.textContent = `● Live ${cfg.provider.toUpperCase()} API Key Configured`;
+        const cseTag = cfg.googleCseId ? ' + CSE ID' : ' + Search Grounding';
+        badge.textContent = `● Live Google / ${cfg.provider.toUpperCase()} API Active${cseTag}`;
         badge.className = 'text-xs font-mono-code bg-sky-500/20 text-sky-300 border border-sky-400/40 px-3 py-1 rounded-full';
-        if (sidebarStatus) sidebarStatus.textContent = `OPTION A + LIVE ${cfg.provider.toUpperCase()} API`;
+        if (sidebarStatus) sidebarStatus.textContent = `GOOGLE API SCRAPER ACTIVE`;
       } else {
-        badge.textContent = 'Autonomous Consensus Active (Zero-Key Mode)';
+        badge.textContent = 'Google News RSS Scraper + Autonomous Mode Active';
         badge.className = 'text-xs font-mono-code bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full';
-        if (sidebarStatus) sidebarStatus.textContent = 'DUAL-ENGINE VERIFIED';
+        if (sidebarStatus) sidebarStatus.textContent = 'GOOGLE RSS + GT VERIFIED';
       }
     }
 
     function saveLlmApiKey() {
       const provider = document.getElementById('llm-provider-select').value;
       const key = document.getElementById('llm-api-key-input').value.trim();
+      const cseId = document.getElementById('google-cse-id-input')?.value.trim() || '';
       localStorage.setItem('marketaura_llm_provider', provider);
       localStorage.setItem('marketaura_llm_key', key);
+      localStorage.setItem('marketaura_google_cse_id', cseId);
       updateLlmStatusBadge();
       if (lastAnalysisData) {
         synthesizeCustomVenturePlan();
@@ -1756,7 +1771,11 @@
 
     function clearLlmApiKey() {
       localStorage.removeItem('marketaura_llm_key');
+      localStorage.removeItem('marketaura_google_cse_id');
       document.getElementById('llm-api-key-input').value = '';
+      if (document.getElementById('google-cse-id-input')) {
+        document.getElementById('google-cse-id-input').value = '';
+      }
       updateLlmStatusBadge();
     }
 
@@ -1794,13 +1813,14 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{ parts: [{ text: `You are MarketAura Game Theory Architect. In 3-4 crisp sentences, provide a strategic market entry synthesis for: ${promptText}` }] }]
+              contents: [{ parts: [{ text: `You are MarketAura Game Theory Architect using live Google Search data. In 3-4 crisp sentences, provide a strategic market entry synthesis for: ${promptText}` }] }],
+              tools: [{ google_search: {} }]
             })
           });
           if (res.ok) {
             const j = await res.json();
             const txt = j.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (txt) return { mode: 'Live Google Gemini Flash API', text: txt.trim() };
+            if (txt) return { mode: 'Live Google Gemini API (Google Search Grounded)', text: txt.trim() };
           }
         }
       } catch (e) {
@@ -2520,6 +2540,9 @@
         document.getElementById('llm-provider-select').value = savedCfg.provider;
         document.getElementById('llm-api-key-input').value = savedCfg.apiKey;
       }
+      if (savedCfg.googleCseId && document.getElementById('google-cse-id-input')) {
+        document.getElementById('google-cse-id-input').value = savedCfg.googleCseId;
+      }
 
       const boot = document.getElementById('boot-loader');
       setTimeout(() => {
@@ -2575,10 +2598,10 @@
       document.body.classList.add('is-loading');
 
       const steps = [
-        { phase: 'STAGE 01 // OPTION A + B EXTRACTION', text: `Running Live Wikipedia/Web Scraper + Option B Knowledge Engine for ${currentRegion}...` },
-        { phase: 'STAGE 02 // REGIONAL & GLOBAL RANKING', text: `Sorting Top-10 ${currentRegion} & Global players by market share, valuation & history...` },
-        { phase: 'STAGE 03 // PRODUCT & LAUNCH RADAR', text: 'Compiling upcoming product launch dates, multi-currency prices & strategies...' },
-        { phase: 'STAGE 04 // AI VENTURE & NASH SOLVER', text: 'Solving 3x3 Normal-Form Nash Equilibrium, Supply Chain & VC Investor Directory...' }
+        { phase: 'STAGE 01 // GOOGLE API INITIAL SCRAPING', text: `Scraping live ${currentRegion} market telemetry via Google Custom Search JSON API & Google News Index...` },
+        { phase: 'STAGE 02 // REGIONAL & GLOBAL RANKING', text: `Sorting Top-10 ${currentRegion} & Global players by Google-verified market share & valuation...` },
+        { phase: 'STAGE 03 // PRODUCT & LAUNCH RADAR', text: 'Extracting upcoming product launch dates, multi-currency prices & launch strategies...' },
+        { phase: 'STAGE 04 // AI VENTURE & NASH SOLVER', text: 'Solving 3x3 Normal-Form Nash Equilibrium, Regional Supply Chain & VC Investor Directory...' }
       ];
       let sIdx = 0;
       const stepTimer = setInterval(() => {
@@ -2588,9 +2611,13 @@
         sIdx++;
       }, 2800);
 
+      const savedApiCfg = getStoredLlmConfig();
       const formData = new FormData();
       formData.append('query', query);
       formData.append('region', currentRegion);
+      formData.append('google_api_key', savedApiCfg.apiKey || '');
+      formData.append('google_cse_id', savedApiCfg.googleCseId || '');
+      formData.append('llm_provider', savedApiCfg.provider || 'gemini');
       formData.append('trust_weight', alphaSlider.value);
       formData.append('relevance_weight', (1 - parseFloat(alphaSlider.value)).toFixed(2));
       formData.append('use_prf', document.getElementById('prf-check').checked);
@@ -2653,7 +2680,7 @@
           <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5">
             <div class="font-mono-code font-bold text-sky-300">${a.engine_name}</div>
             <div class="text-slate-400">Status: <strong class="text-emerald-400">${a.status}</strong> • Score: <strong>${a.reliability_score}</strong></div>
-            <div class="text-slate-300">Crawled Web Nodes: ${a.crawled_doc_count} | Wikipedia Matches: ${a.wikipedia_nodes_matched}</div>
+            <div class="text-slate-300">Google API Scraped Nodes: ${a.crawled_doc_count} | Google Search Index Hits: ${a.google_index_matches ?? a.wikipedia_nodes_matched ?? 0}</div>
           </div>
           <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5">
             <div class="font-mono-code font-bold text-indigo-300">${b.engine_name}</div>
