@@ -1,6 +1,4 @@
 import os
-import re
-import tempfile
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,13 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from modules.stage1_ingestion_crawler import (
     DocumentParser,
     QueryFormulator,
-    WebAndSocialCrawler
+    WebAndSocialCrawler,
 )
-from modules.stage2_indexer import DocumentIndexer, TextPreprocessor
+from modules.stage2_indexer import TextPreprocessor, DocumentIndexer
 from modules.stage5_ranking_qa import HybridRankingQAEngine
 from modules.stage6_game_theory import GameTheoryIndustryEngine
 
-app = FastAPI(title="Verify It — IR & Game Theory Strategic Intelligence")
+app = FastAPI(title="MarketAura — Strategic Game Theory & Product Intelligence Engine")
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,105 +27,83 @@ async def serve_ui():
     html_path = os.path.join(os.path.dirname(__file__), "..", "public", "index.html")
     if os.path.exists(html_path):
         with open(html_path, "r", encoding="utf-8") as f:
-            return f.read()
-    return "<h2>Verify It API is running. Place index.html in /public.</h2>"
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>MarketAura UI not found in public/index.html</h1>", status_code=404)
 
 
 @app.post("/api/search")
-async def search_endpoint(
+async def search_and_analyze(
     query: str = Form(""),
+    region: str = Form("India"),
+    google_api_key: str = Form(""),
+    google_cse_id: str = Form(""),
+    llm_provider: str = Form("gemini"),
     trust_weight: float = Form(0.50),
     relevance_weight: float = Form(0.50),
     use_prf: bool = Form(True),
-    interests: str = Form("official, verified, academic, research"),
-    file: UploadFile = File(None)
+    file: UploadFile = File(None),
 ):
     uploaded_doc = None
     if file and file.filename:
-        suffix = os.path.splitext(file.filename)[1].lower()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            content = await file.read()
-            tmp.write(content)
-            tmp_path = tmp.name
-        try:
-            if suffix in [".png", ".jpg", ".jpeg", ".webp"]:
-                clean_img_name = re.sub(r'[_-]+', ' ', os.path.splitext(file.filename)[0])
-                uploaded_doc = {
-                    "id": "UPLOAD_IMG",
-                    "title": f"Uploaded Image: {file.filename}",
-                    "url": "#uploaded-image",
-                    "source": "uploaded-media.org",
-                    "date": "2026-03-01",
-                    "text": f"Visual media document uploaded for verification: {clean_img_name}. {query}",
-                    "type": "uploaded_image"
-                }
-            else:
-                uploaded_doc = DocumentParser.parse_file(tmp_path, original_name=file.filename)
-        finally:
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
+        raw_bytes = await file.read()
+        uploaded_doc = DocumentParser.parse_uploaded_file(file.filename, raw_bytes)
 
-    if uploaded_doc and not query.strip():
-        active_query = QueryFormulator.formulate_query_from_input(uploaded_doc["text"])
-    else:
-        active_query = QueryFormulator.formulate_query_from_input(query.strip() or "cloud computing industry")
+    active_query = QueryFormulator.formulate_query_from_input(query, uploaded_doc)
 
-    total_w = float(relevance_weight) + float(trust_weight)
-    alpha = (float(relevance_weight) / total_w) if total_w > 0 else 0.50
-
-    # Stage 1: Crawl Live Web & Social Media Documents
-    crawler = WebAndSocialCrawler()
-    docs, link_graph = crawler.crawl_and_collect(active_query, uploaded_doc=uploaded_doc)
-
-    dynamic_vocab = set()
-    for d in docs:
-        dynamic_vocab.update(re.findall(r'\b[a-zA-Z]{4,}\b', f"{d.get('title', '')} {d.get('text', '')}".lower()))
-    suggested_query = QueryFormulator.suggest_query_correction(active_query, dynamic_vocab=dynamic_vocab)
-
-    # Stage 2: Preprocess & Build Inverted/Positional/Compressed Indexes
-    raw_tokens = TextPreprocessor.remove_stopwords(TextPreprocessor.tokenize(active_query))
-    lemmatized_tokens = [TextPreprocessor.lemmatize(t) for t in raw_tokens]
-    stemmed_tokens = [TextPreprocessor.stem(t) for t in lemmatized_tokens]
-
-    indexer = DocumentIndexer(ngram_size=3)
-    indexer.build_indexes(docs)
-
-    # Stage 3, 4 & 5: IR Retrieval, Reliability Mining, Hybrid Ranking & QA
-    user_profile = [w.strip() for w in interests.split(",") if w.strip()]
-    engine = HybridRankingQAEngine(docs, link_graph)
-    pipeline_out = engine.execute_search_pipeline(
+    # Stage 1: Initial Data Scraping via Google Custom Search JSON API / Gemini Grounding / Google News Index
+    docs = WebAndSocialCrawler.crawl_live_web(
         query=active_query,
-        user_interests=user_profile,
-        alpha=alpha,
-        use_query_expansion=bool(use_prf)
+        max_results=8,
+        region=region,
+        google_api_key=google_api_key,
+        google_cse_id=google_cse_id,
+    )
+    if uploaded_doc:
+        docs.insert(0, uploaded_doc)
+
+    # Stage 2–5: Indexing, Authority Verification & Hybrid Ranking
+    indexer = DocumentIndexer(docs)
+    ranking_engine = HybridRankingQAEngine(docs, indexer)
+    ir_output = ranking_engine.execute_full_pipeline(
+        query=active_query,
+        alpha_relevance=float(relevance_weight),
+        beta_reliability=float(trust_weight),
+        use_prf=bool(use_prf),
     )
 
-    # Stage 6: Game Theory Market & Brand Strategy Engine (Modules 1 to 5)
+    # Stage 6: MarketAura Game Theory, Product Radar & Google API Dual-Engine Analysis
+    q_to_pass = query.strip() if query.strip() else active_query
     game_theory_report = GameTheoryIndustryEngine.analyze_industry(
-        query=raw_query if (raw_query := query.strip()) else active_query,
-        crawled_docs=docs
+        query=q_to_pass,
+        crawled_docs=docs,
+        region=region,
+        google_api_key=google_api_key,
+        google_cse_id=google_cse_id,
     )
 
-    sample_stem = stemmed_tokens[0] if stemmed_tokens else ""
+    first_stem = (
+        TextPreprocessor.preprocess(active_query)[0]
+        if TextPreprocessor.preprocess(active_query)
+        else "market"
+    )
+    inv_postings = indexer.inverted_index.get(first_stem, [])
+    pos_postings = indexer.positional_index.get(first_stem, {})
+    comp_gaps = indexer.compressed_index.get(first_stem, [])
 
-    return JSONResponse({
-        "raw_query": query,
-        "active_query": active_query,
-        "suggested_query": suggested_query,
-        "lemmatized_tokens": lemmatized_tokens,
-        "stemmed_tokens": stemmed_tokens,
-        "expanded_query": pipeline_out["query_metadata"]["expanded_query"],
-        "added_terms": pipeline_out["query_metadata"]["added_terms"],
-        "direct_answer": pipeline_out["extracted_answer"],
-        "hybrid_results": pipeline_out["hybrid_ranking"],
-        "standard_results": pipeline_out["standard_ranking"],
-        "evaluation": pipeline_out["evaluation"],
-        "clusters": pipeline_out["clusters"],
-        "game_theory_analysis": game_theory_report,
-        "index_preview": {
-            "stem": sample_stem,
-            "inverted": indexer.inverted_index.get(sample_stem, []),
-            "compressed_gaps": indexer.compressed_index.get(sample_stem, []),
-            "positional": dict(indexer.positional_index.get(sample_stem, {}))
+    return JSONResponse(
+        content={
+            "active_query": ir_output["expanded_query"],
+            "added_terms": ir_output["added_prf_terms"],
+            "direct_answer": ir_output["direct_answer"],
+            "hybrid_results": ir_output["hybrid_results"],
+            "standard_results": ir_output["standard_results"],
+            "evaluation": ir_output["evaluation"],
+            "index_preview": {
+                "stem": first_stem,
+                "inverted": inv_postings,
+                "positional": pos_postings,
+                "compressed_gaps": comp_gaps,
+            },
+            "game_theory_analysis": game_theory_report,
         }
-    })
+    )
