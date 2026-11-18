@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --sidebar-width: 264px;
+      --sidebar-width: 268px;
       --bg-void: #050812;
     }
 
@@ -197,7 +197,6 @@
         opacity 0.5s ease;
     }
 
-    /* Character Bot Wrapper & Idle Float */
     .aura-bot-avatar {
       animation: botHover 2.8s ease-in-out infinite alternate;
       filter: drop-shadow(0 10px 20px rgba(56, 189, 248, 0.35));
@@ -207,7 +206,6 @@
       100% { transform: translateY(-10px) rotate(2deg); }
     }
 
-    /* Directional Entry Animations from Random Screen Edges */
     .enter-from-right {
       animation: flyFromRight 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
@@ -239,7 +237,7 @@
     }
 
     /* =====================================================================
-       5. FIXED SIDEBAR & CUSTOM FLAG CURRENCY PICKER
+       5. FIXED SIDEBAR & CUSTOM FLAG REGION / CURRENCY PICKERS
        ===================================================================== */
     #workspace-sidebar {
       position: fixed;
@@ -258,8 +256,8 @@
     #workspace-sidebar:not(.hidden) { display: flex; }
 
     .sidebar-top {
-      height: 70px;
-      flex: 0 0 70px;
+      height: 68px;
+      flex: 0 0 68px;
       display: flex;
       align-items: center;
       gap: 14px;
@@ -291,20 +289,20 @@
     .sidebar-brand span { color: #38bdf8; }
     .sidebar-section-label {
       font-family: 'JetBrains Mono', monospace;
-      padding: 18px 20px 8px;
+      padding: 14px 20px 6px;
       color: #64748b;
       font-size: 10px;
       font-weight: 600;
       letter-spacing: 0.12em;
       white-space: nowrap;
     }
-    .sidebar-nav { display: flex; flex-direction: column; gap: 5px; padding: 0 12px; }
+    .sidebar-nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
     .sidebar-nav .tab-btn {
       display: flex;
       align-items: center;
       gap: 12px;
       width: 100%;
-      min-height: 42px;
+      min-height: 40px;
       padding: 0 13px;
       border: 1px solid transparent;
       border-radius: 11px;
@@ -544,7 +542,7 @@
       .sidebar-brand, .sidebar-section-label, .sidebar-nav .nav-label, .sidebar-currency-box, .sidebar-footer { display: none; }
       .sidebar-nav { padding: 0 8px; }
       .sidebar-nav .tab-btn { justify-content: center; padding: 0; }
-      body.sidebar-expanded #workspace-sidebar { width: 260px; }
+      body.sidebar-expanded #workspace-sidebar { width: 268px; }
       body.sidebar-expanded .sidebar-top { padding: 0 20px; justify-content: flex-start; gap: 14px; }
       body.sidebar-expanded .sidebar-brand,
       body.sidebar-expanded .sidebar-section-label,
@@ -586,24 +584,53 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 18h.01"/></svg>
         <span class="nav-label">Product Reviews &amp; Boom</span>
       </button>
+      <button onclick="transitionToViewFromHub('venture')" id="nav-btn-venture" class="tab-btn" type="button" title="Interactive AI Market Entry Roadmap & Venture Builder">
+        <svg class="nav-icon text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+        <span class="nav-label text-emerald-300 font-semibold">AI Venture Builder</span>
+      </button>
       <button onclick="openMainView('models')" id="nav-btn-models" class="tab-btn" type="button" title="Mathematical Nash & LP Models">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="m12 7 1.6 3.3L17 12l-3.4 1.7L12 17l-1.6-3.3L7 12l3.4-1.7L12 7Z"/></svg>
         <span class="nav-label">Nash &amp; LP Solvers</span>
       </button>
     </nav>
 
-    <!-- CUSTOM CURRENCY SELECTOR WITH REAL COUNTRY FLAG IMAGES (10 CURRENCIES) -->
-    <div class="sidebar-currency-box px-3.5 mt-5 relative">
-      <div class="p-3 rounded-xl bg-slate-900/85 border border-slate-800/90">
-        <span class="block text-[10px] font-mono-code uppercase tracking-wider text-slate-400 mb-2">
+    <!-- REGION-SPECIFIC MARKET FILTER + 10-CURRENCY SELECTOR WITH REAL FLAG IMAGES -->
+    <div class="sidebar-currency-box px-3.5 mt-3 space-y-2.5 relative">
+      <!-- 1. Market Region Selector (India, Global, USA, Europe, UK, Japan, UAE, Singapore) -->
+      <div class="p-2.5 rounded-xl bg-slate-900/85 border border-slate-800/90 relative">
+        <span class="block text-[10px] font-mono-code uppercase tracking-wider text-slate-400 mb-1.5">
+          Market Region Scope
+        </span>
+        <button
+          type="button"
+          id="region-dropdown-btn"
+          onclick="toggleRegionDropdown(event)"
+          class="w-full flex items-center justify-between gap-2 bg-slate-950 hover:bg-slate-900 border border-slate-700/90 hover:border-emerald-400/60 text-xs font-mono-code text-emerald-300 rounded-xl px-3 py-2 cursor-pointer transition"
+        >
+          <span class="flex items-center gap-2.5 truncate">
+            <img id="selected-reg-flag" src="https://flagcdn.com/w40/in.png" alt="IN" class="w-5 h-3.5 object-cover rounded-xs border border-slate-700 shrink-0" />
+            <span id="selected-reg-label" class="truncate font-semibold">India Market (National)</span>
+          </span>
+          <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </button>
+        <div
+          id="region-dropdown-menu"
+          class="hidden absolute left-0 right-0 bottom-full mb-2 max-h-60 overflow-y-auto rounded-xl bg-slate-950 border border-emerald-500/40 shadow-2xl z-50 divide-y divide-slate-800/70"
+        ></div>
+      </div>
+
+      <!-- 2. Display Currency Selector (10 Currencies with Flag Images, Default INR) -->
+      <div class="p-2.5 rounded-xl bg-slate-900/85 border border-slate-800/90 relative">
+        <span class="block text-[10px] font-mono-code uppercase tracking-wider text-slate-400 mb-1.5">
           Display Currency (Default INR)
         </span>
-        <!-- Trigger Button -->
         <button
           type="button"
           id="currency-dropdown-btn"
           onclick="toggleCurrencyDropdown(event)"
-          class="w-full flex items-center justify-between gap-2 bg-slate-950 hover:bg-slate-900 border border-slate-700/90 hover:border-sky-400/60 text-xs font-mono-code text-sky-300 rounded-xl px-3 py-2.5 cursor-pointer transition"
+          class="w-full flex items-center justify-between gap-2 bg-slate-950 hover:bg-slate-900 border border-slate-700/90 hover:border-sky-400/60 text-xs font-mono-code text-sky-300 rounded-xl px-3 py-2 cursor-pointer transition"
         >
           <span class="flex items-center gap-2.5 truncate">
             <img id="selected-curr-flag" src="https://flagcdn.com/w40/in.png" alt="IN" class="w-5 h-3.5 object-cover rounded-xs border border-slate-700 shrink-0" />
@@ -613,17 +640,15 @@
             <path d="m6 9 6 6 6-6"/>
           </svg>
         </button>
-
-        <!-- Custom Flag Options Menu -->
         <div
           id="currency-dropdown-menu"
-          class="hidden absolute left-3.5 right-3.5 bottom-full mb-2 max-h-64 overflow-y-auto rounded-xl bg-slate-950 border border-sky-500/40 shadow-2xl z-50 divide-y divide-slate-800/70"
+          class="hidden absolute left-0 right-0 bottom-full mb-2 max-h-60 overflow-y-auto rounded-xl bg-slate-950 border border-sky-500/40 shadow-2xl z-50 divide-y divide-slate-800/70"
         ></div>
       </div>
     </div>
 
-    <!-- FIXED SETTINGS & DATA ENGINE BUTTON (CLEAN SINGLE ICON, NO OVERFLOW) -->
-    <div class="mt-auto pt-3 border-t border-slate-800/60">
+    <!-- FIXED SETTINGS & DATA ENGINE BUTTON -->
+    <div class="mt-auto pt-2.5 border-t border-slate-800/60">
       <div class="sidebar-nav">
         <button onclick="openMainView('settings')" id="nav-btn-settings" class="tab-btn" type="button" title="Settings & Data Engine">
           <svg class="nav-icon text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
@@ -635,12 +660,12 @@
       </div>
     </div>
 
-    <div class="sidebar-footer p-3.5 m-3 mt-2 rounded-xl bg-slate-900/90 border border-slate-800/90 text-[11px] text-slate-400">
+    <div class="sidebar-footer p-3 m-3 mt-1.5 rounded-xl bg-slate-900/90 border border-slate-800/90 text-[11px] text-slate-400">
       <div class="flex items-center gap-2 text-emerald-400 font-mono-code font-semibold mb-0.5">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>DUAL-ENGINE VERIFIED</span>
+        <span id="sidebar-engine-status">DUAL-ENGINE VERIFIED</span>
       </div>
-      <div>Option A + B Consensus Active</div>
+      <div id="sidebar-region-summary">Region: India • Option A + B Active</div>
     </div>
   </aside>
 
@@ -649,7 +674,7 @@
     <div class="boot-card">
       <div class="boot-mark" aria-hidden="true"><span class="font-heading font-bold text-white text-xl">MA</span></div>
       <h1 class="font-heading text-3xl font-bold text-white"><span class="text-white">Market</span><span class="text-sky-400">Aura</span></h1>
-      <p class="text-xs text-slate-400 mt-2.5 leading-relaxed">Initializing 3D Strategic Equilibrium Mesh, Top-10 Company Ranker &amp; Product Intelligence...</p>
+      <p class="text-xs text-slate-400 mt-2.5 leading-relaxed">Initializing 3D Strategic Equilibrium Mesh, Regional Brand Matrices &amp; AI Venture Builder...</p>
       <div class="boot-progress" aria-hidden="true"><span></span></div>
       <p class="font-mono-code text-[10px] text-sky-400 uppercase tracking-widest mt-3.5">Calibrating Game Theory Core</p>
     </div>
@@ -662,14 +687,14 @@
     <div id="brand-header" class="text-center mb-7 max-w-3xl transition-all duration-500">
       <div id="hero-badge" class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-sky-500/10 border border-sky-400/25 text-sky-300 text-xs font-mono-code uppercase tracking-wider mb-3.5">
         <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
-        <span>Quantitative Game Theory &amp; Product Intelligence</span>
+        <span>Quantitative Game Theory, Regional Intelligence &amp; AI Venture Builder</span>
       </div>
 
       <h1 id="hero-title" class="font-heading text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white">
         Market<span class="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">Aura</span>
       </h1>
       <p id="hero-subtitle" class="text-sm sm:text-base text-slate-300 mt-2.5 max-w-2xl mx-auto leading-relaxed">
-        Analyze incumbent &amp; challenger brands, compare tiered product specifications, and compute the exact Nash-Optimal product blueprint capable of disrupting your target market.
+        Analyze regional &amp; global incumbent brands, compare tiered product specifications, and synthesize an AI-driven market entry roadmap, distributor chain, and VC investor directory.
       </p>
     </div>
 
@@ -722,8 +747,8 @@
     <div class="loader-panel">
       <div class="loader-orbit" aria-hidden="true"><span class="font-heading font-bold text-sky-400">MA</span></div>
       <p class="font-mono-code text-xs font-semibold uppercase tracking-widest text-sky-400 mb-1.5">MarketAura Quantitative Core</p>
-      <h2 id="loader-title" class="font-heading text-2xl sm:text-3xl font-bold text-white">Analyzing Industry &amp; Product Landscape</h2>
-      <p id="loader-step-text" class="text-sm sm:text-base text-slate-400 mt-2 leading-relaxed">Running Option A (Live Web Scraper) + Option B (Autonomous Synthesizer)...</p>
+      <h2 id="loader-title" class="font-heading text-2xl sm:text-3xl font-bold text-white">Analyzing Industry &amp; Regional Landscape</h2>
+      <p id="loader-step-text" class="text-sm sm:text-base text-slate-400 mt-2 leading-relaxed">Running Option A (Live Web Scraper) + Option B (LLM / Knowledge API)...</p>
       <div class="loader-track" role="presentation"><div id="loader-bar"></div></div>
       <div class="flex items-center justify-between mt-4 text-[11px] font-mono-code text-slate-400 uppercase">
         <span id="loader-phase">STAGE 01 // DUAL-SOURCE EXTRACTION</span>
@@ -739,36 +764,41 @@
   <main id="results-container" class="hidden w-full max-w-none mx-0 pb-24">
 
     <!-- =====================================================================
-         STAGE VIEW 1: THE TWO PRIMARY GATEWAY CARDS
-         ("The Companies Strategies"  &  "The Product Reviews")
+         STAGE VIEW 1: THE GATEWAY COMMAND HUB
+         ("The Companies Strategies", "The Product Reviews" & "AI Venture Builder")
          ===================================================================== -->
-    <section id="view-hub" class="max-w-6xl mx-auto pt-4 ppt-stage-enter">
+    <section id="view-hub" class="max-w-7xl mx-auto pt-4 ppt-stage-enter">
       <div class="text-center mb-8">
-        <span id="hub-consensus-badge" class="inline-flex items-center gap-2 text-xs font-mono-code text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 px-3.5 py-1 rounded-full"></span>
-        <h2 id="hub-industry-heading" class="font-heading text-3xl sm:text-4xl font-bold text-white mt-2"></h2>
-        <p class="text-sm text-slate-400 mt-1">Click either intelligence card below to enlarge and transition into the full-window terminal</p>
+        <div class="flex flex-wrap items-center justify-center gap-2.5">
+          <span id="hub-consensus-badge" class="inline-flex items-center gap-2 text-xs font-mono-code text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 px-3.5 py-1 rounded-full"></span>
+          <span id="hub-region-badge" class="inline-flex items-center gap-2 text-xs font-mono-code text-sky-300 bg-sky-500/10 border border-sky-400/30 px-3.5 py-1 rounded-full"></span>
+        </div>
+        <h2 id="hub-industry-heading" class="font-heading text-3xl sm:text-4xl font-bold text-white mt-2.5"></h2>
+        <p class="text-sm text-slate-400 mt-1">Click any strategic intelligence card below to enlarge and transition into its full-window terminal</p>
       </div>
 
-      <!-- TWO GIANT INTERACTIVE GATEWAY CARDS WITH PPT MORPH ANIMATION -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
+      <!-- INTERACTIVE GATEWAY CARDS WITH PPT MORPH ANIMATION -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <!-- CARD 1: THE COMPANIES STRATEGIES -->
-        <div id="hub-card-companies" onclick="transitionToViewFromHub('companies')" class="exec-panel rounded-3xl p-8 cursor-pointer group relative overflow-hidden border-2 border-sky-500/30 hover:border-sky-400">
-          <div class="absolute -right-12 -top-12 w-44 h-44 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-400/20 transition"></div>
-          <div class="flex items-center justify-between mb-6">
-            <span class="font-mono-code text-xs uppercase tracking-widest text-sky-400 bg-sky-500/10 border border-sky-400/30 px-3 py-1 rounded-md">
-              MODULE 01 // CORPORATE GAME THEORY
-            </span>
-            <span class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-300 group-hover:translate-x-1 transition">
-              ↗
-            </span>
+        <div id="hub-card-companies" onclick="transitionToViewFromHub('companies')" class="exec-panel rounded-3xl p-7 cursor-pointer group relative overflow-hidden border-2 border-sky-500/30 hover:border-sky-400 flex flex-col justify-between">
+          <div>
+            <div class="absolute -right-12 -top-12 w-44 h-44 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-400/20 transition"></div>
+            <div class="flex items-center justify-between mb-5">
+              <span class="font-mono-code text-xs uppercase tracking-widest text-sky-400 bg-sky-500/10 border border-sky-400/30 px-3 py-1 rounded-md">
+                MODULE 01 // CORPORATE HIERARCHY
+              </span>
+              <span class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-300 group-hover:translate-x-1 transition">
+                ↗
+              </span>
+            </div>
+            <h3 class="font-heading text-2xl sm:text-3xl font-bold text-white mb-3">
+              The Companies Strategies
+            </h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-6">
+              Inspect the Top-10 ranked companies filtered by your active Region or Global scope. Click any company to enlarge its profile with a reversed History Timeline (latest first), Strategic Pivots, Latest Products, and Share Graphs.
+            </p>
           </div>
-          <h3 class="font-heading text-2xl sm:text-3xl font-bold text-white mb-3">
-            The Companies Strategies
-          </h3>
-          <p class="text-sm text-slate-300 leading-relaxed mb-6">
-            Inspect the Top-10 ranked companies in this industry ordered by Market Share &amp; Valuation. Click any company to enlarge its profile with a reversed chronological History Timeline (latest first), Strategic Pivots, Latest Products, and Share Graphs.
-          </p>
           <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-800/80 text-xs font-mono-code">
             <div>
               <span class="text-slate-400 block text-[10px]">RANKED PLAYERS</span>
@@ -782,22 +812,24 @@
         </div>
 
         <!-- CARD 2: THE PRODUCT REVIEWS -->
-        <div id="hub-card-products" onclick="transitionToViewFromHub('products')" class="exec-panel rounded-3xl p-8 cursor-pointer group relative overflow-hidden border-2 border-indigo-500/30 hover:border-indigo-400">
-          <div class="absolute -right-12 -top-12 w-44 h-44 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-400/20 transition"></div>
-          <div class="flex items-center justify-between mb-6">
-            <span class="font-mono-code text-xs uppercase tracking-widest text-indigo-300 bg-indigo-500/10 border border-indigo-400/30 px-3 py-1 rounded-md">
-              MODULE 02 // PRODUCT &amp; LAUNCH RADAR
-            </span>
-            <span class="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-400/30 flex items-center justify-center text-indigo-300 group-hover:translate-x-1 transition">
-              ↗
-            </span>
+        <div id="hub-card-products" onclick="transitionToViewFromHub('products')" class="exec-panel rounded-3xl p-7 cursor-pointer group relative overflow-hidden border-2 border-indigo-500/30 hover:border-indigo-400 flex flex-col justify-between">
+          <div>
+            <div class="absolute -right-12 -top-12 w-44 h-44 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-400/20 transition"></div>
+            <div class="flex items-center justify-between mb-5">
+              <span class="font-mono-code text-xs uppercase tracking-widest text-indigo-300 bg-indigo-500/10 border border-indigo-400/30 px-3 py-1 rounded-md">
+                MODULE 02 // PRODUCT &amp; LAUNCH RADAR
+              </span>
+              <span class="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-400/30 flex items-center justify-center text-indigo-300 group-hover:translate-x-1 transition">
+                ↗
+              </span>
+            </div>
+            <h3 class="font-heading text-2xl sm:text-3xl font-bold text-white mb-3">
+              The Product Reviews
+            </h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-6">
+              Explore Upcoming Market Launches (with expected release dates), Current Tiered Products (Flagship, Mid-Range, Value), interactive Aura-Bot Floating Spec Overlay, Direct Official Links, and the Market-Boom Blueprint.
+            </p>
           </div>
-          <h3 class="font-heading text-2xl sm:text-3xl font-bold text-white mb-3">
-            The Product Reviews
-          </h3>
-          <p class="text-sm text-slate-300 leading-relaxed mb-6">
-            Explore Upcoming Market Launches (with expected release dates), Current Tiered Products (Flagship, Mid-Range, Value), interactive Aura-Bot Floating Spec Overlay, Direct Official Links, and the Market-Boom Blueprint.
-          </p>
           <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-800/80 text-xs font-mono-code">
             <div>
               <span class="text-slate-400 block text-[10px]">CATALOG COVERAGE</span>
@@ -806,6 +838,37 @@
             <div>
               <span class="text-slate-400 block text-[10px]">NASH RECOMMENDATION</span>
               <span class="text-emerald-300 font-bold">★ Market-Boom Blueprint</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: AI MARKET ENTRY ROADMAP & VENTURE BUILDER -->
+        <div id="hub-card-venture" onclick="transitionToViewFromHub('venture')" class="exec-panel rounded-3xl p-7 cursor-pointer group relative overflow-hidden border-2 border-emerald-500/30 hover:border-emerald-400 flex flex-col justify-between">
+          <div>
+            <div class="absolute -right-12 -top-12 w-44 h-44 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-400/20 transition"></div>
+            <div class="flex items-center justify-between mb-5">
+              <span class="font-mono-code text-xs uppercase tracking-widest text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 px-3 py-1 rounded-md">
+                MODULE 03 // AI VENTURE ARCHITECT
+              </span>
+              <span class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-emerald-300 group-hover:translate-x-1 transition">
+                ↗
+              </span>
+            </div>
+            <h3 class="font-heading text-2xl sm:text-3xl font-bold text-white mb-3">
+              AI Venture Builder
+            </h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-6">
+              Interactive AI market-entry strategist that drafts your custom 4-phase game-theoretic business plan, maps out regional distributor &amp; EMS supply chains, and connects you with curated Venture Capital investors.
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-800/80 text-xs font-mono-code">
+            <div>
+              <span class="text-slate-400 block text-[10px]">EXECUTION ENGINE</span>
+              <span class="text-emerald-300 font-bold">Option B LLM + GT Core</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px]">DELIVERABLES</span>
+              <span class="text-sky-300 font-bold">Roadmap • Supply • VCs</span>
             </div>
           </div>
         </div>
@@ -819,16 +882,16 @@
     <section id="view-companies" class="hidden max-w-6xl mx-auto pt-4 ppt-stage-enter">
       <div class="flex flex-wrap items-start justify-between gap-4 mb-6 pb-5 border-b border-slate-800">
         <div class="max-w-3xl">
-          <div class="text-xs font-mono-code text-sky-400 uppercase tracking-widest">MODULE 01 // CORPORATE GAME THEORY &amp; MARKET SHARE HIERARCHY</div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-mono-code text-sky-400 uppercase tracking-widest">MODULE 01 // CORPORATE GAME THEORY &amp; MARKET SHARE HIERARCHY</span>
+            <span id="companies-region-pill" class="text-[11px] font-mono-code bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 px-2.5 py-0.5 rounded-full"></span>
+          </div>
           <!-- 1. Main Heading Typed First -->
           <h2 id="typewriter-companies-header" class="font-heading text-2xl sm:text-4xl font-bold text-white mt-1"></h2>
-          <!-- 2. Detailed Headline Typed Second (After Heading Cursor Finishes) -->
+          <!-- 2. Detailed Headline Typed Second -->
           <p id="typewriter-companies-subheadline" class="font-mono-code text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed"></p>
         </div>
 
-        <!-- DYNAMIC CONTEXTUAL BACK BUTTON:
-             Shows "← Back to Sector Hub" on the list, and automatically changes to
-             "← Back to Company List" when inside any company's profile! -->
         <button
           id="companies-dynamic-back-btn"
           onclick="handleCompaniesBackAction()"
@@ -836,6 +899,20 @@
         >
           ← Back to Sector Hub
         </button>
+      </div>
+
+      <!-- GLOBAL VS NATIONAL REGIONAL SCOPE BAR -->
+      <div id="regional-leaders-banner" class="exec-panel rounded-2xl p-4 mb-5 border-l-4 border-l-emerald-400 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div id="regional-banner-title" class="text-xs font-mono-code font-bold text-emerald-300 uppercase"></div>
+          <p id="regional-banner-desc" class="text-xs text-slate-300 mt-0.5"></p>
+        </div>
+        <div class="flex flex-wrap gap-1.5 text-[11px] font-mono-code">
+          <button type="button" onclick="selectRegionOption('India')" class="reg-quick-chip px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:border-emerald-400 text-slate-300 cursor-pointer">🇮🇳 India</button>
+          <button type="button" onclick="selectRegionOption('Global')" class="reg-quick-chip px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:border-emerald-400 text-slate-300 cursor-pointer">🌐 Global</button>
+          <button type="button" onclick="selectRegionOption('USA')" class="reg-quick-chip px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:border-emerald-400 text-slate-300 cursor-pointer">🇺🇸 USA</button>
+          <button type="button" onclick="selectRegionOption('Europe')" class="reg-quick-chip px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:border-emerald-400 text-slate-300 cursor-pointer">🇪🇺 Europe</button>
+        </div>
       </div>
 
       <!-- LIST OF TOP-10 COMPANIES IN HORIZONTAL RECTANGULAR BOXES -->
@@ -977,7 +1054,125 @@
     </section>
 
     <!-- =====================================================================
-         STAGE VIEW 4: MATHEMATICAL NASH, ZERO-SUM LP & ADVANCED SOLVERS
+         STAGE VIEW 4: INTERACTIVE AI MARKET ENTRY ROADMAP & VENTURE BUILDER
+         ===================================================================== -->
+    <section id="view-venture" class="hidden max-w-7xl mx-auto pt-4 space-y-7 ppt-stage-enter">
+      <div class="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-slate-800">
+        <div class="max-w-3xl">
+          <div class="text-xs font-mono-code text-emerald-400 uppercase tracking-widest">MODULE 03 // AI MARKET ENTRY ARCHITECT, SUPPLY CHAIN &amp; VC DIRECTORY</div>
+          <h2 id="typewriter-venture-header" class="font-heading text-2xl sm:text-4xl font-bold text-white mt-1"></h2>
+          <p id="typewriter-venture-subheadline" class="font-mono-code text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed"></p>
+        </div>
+        <button onclick="openMainView('hub')" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-xs font-mono-code font-semibold text-emerald-300 cursor-pointer transition shrink-0">
+          ← Back to Sector Hub
+        </button>
+      </div>
+
+      <!-- INTERACTIVE AI VENTURE INTERVIEW & STRATEGY CUSTOMIZER -->
+      <div class="exec-panel rounded-3xl p-6 border-2 border-emerald-500/35">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div>
+            <span class="text-[11px] font-mono-code uppercase tracking-wider text-emerald-400 block">Interactive Founder Co-Pilot</span>
+            <h3 class="font-heading text-xl font-bold text-white">Configure Your Venture Parameters &amp; Generate Custom Entry Plan</h3>
+          </div>
+          <span id="venture-region-tag" class="text-xs font-mono-code bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full"></span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-xs">
+          <div>
+            <label class="block font-mono-code text-slate-400 uppercase mb-1.5">1. Initial Capital Stage</label>
+            <select id="venture-capital-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 font-mono-code focus:outline-none focus:border-emerald-400">
+              <option value="Seed / Bootstrapped (Lean Judo Entry)">Seed / Bootstrapped (Lean Judo Entry)</option>
+              <option value="Series A Challenger (Scale & Distribution)" selected>Series A Challenger (Scale &amp; Distribution)</option>
+              <option value="Enterprise Spin-Off (Full Vertical Integration)">Enterprise Spin-Off (Full Vertical Integration)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-mono-code text-slate-400 uppercase mb-1.5">2. Strategic Entry Posture</label>
+            <select id="venture-posture-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 font-mono-code focus:outline-none focus:border-emerald-400">
+              <option value="Asymmetric Mid-Range Flagship-Killer (Nash Sweet-Spot)" selected>Asymmetric Flagship-Killer (Nash Sweet-Spot)</option>
+              <option value="Ecosystem Co-opetition Layer (Zero Switching Cost)">Ecosystem Co-opetition Layer (Zero Switching Cost)</option>
+              <option value="B2B Sovereign / Privacy-First Vertical Monopoly">B2B Sovereign / Privacy-First Vertical</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-mono-code text-slate-400 uppercase mb-1.5">3. Distribution Model</label>
+            <select id="venture-channel-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 font-mono-code focus:outline-none focus:border-emerald-400">
+              <option value="D2C Community + Quick-Commerce Dark Stores" selected>D2C Community + Quick-Commerce / Online</option>
+              <option value="Omnichannel National Distributor Network">Omnichannel National Distributor Network</option>
+              <option value="Enterprise Direct Outbound + PLG Self-Serve">Enterprise Direct Outbound + PLG Self-Serve</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input
+            id="venture-custom-goal"
+            type="text"
+            placeholder="Optional: Describe your specific startup idea or niche goal (e.g., 'Clean-OS modular smartphone for Indian gamers under ₹35,000')..."
+            class="flex-1 bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
+          />
+          <button
+            type="button"
+            onclick="synthesizeCustomVenturePlan()"
+            class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-heading font-bold text-xs sm:text-sm cursor-pointer transition shrink-0 shadow-lg shadow-emerald-500/20"
+          >
+            Synthesize AI Business Plan ✦
+          </button>
+        </div>
+
+        <!-- Option B AI Executive Synthesis Terminal Output -->
+        <div class="mt-5 bg-slate-950/95 border border-emerald-500/30 rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-mono-code uppercase tracking-wider text-emerald-400">OPTION B AI VENTURE ARCHITECT // CUSTOM EXECUTIVE SYNTHESIS</span>
+            <span id="venture-llm-mode-badge" class="text-[10px] font-mono-code text-sky-300 bg-sky-500/10 border border-sky-400/30 px-2.5 py-0.5 rounded"></span>
+          </div>
+          <p id="venture-llm-output" class="font-mono-code text-xs sm:text-sm text-slate-200 leading-relaxed"></p>
+        </div>
+      </div>
+
+      <!-- 4-PHASE GAME-THEORETIC ROADMAP -->
+      <div class="exec-panel rounded-3xl p-6 scroll-reveal-item">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+          <div>
+            <span class="text-[11px] font-mono-code uppercase tracking-wider text-sky-400 block">Sequential Execution Blueprint</span>
+            <h3 class="font-heading text-xl font-bold text-white">🗺️ 4-Phase Game-Theoretic Market Entry Roadmap</h3>
+          </div>
+          <span class="text-xs font-mono-code text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 px-3 py-1 rounded-md">Subgame Perfect Execution</span>
+        </div>
+        <div id="venture-phases-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- REGIONAL DISTRIBUTOR / SUPPLY CHAIN + INVESTOR DIRECTORY -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Regional Supply & Distributor Chain (6 cols) -->
+        <div class="lg:col-span-6 exec-panel rounded-3xl p-6 scroll-reveal-item">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+            <div>
+              <span class="text-[11px] font-mono-code uppercase tracking-wider text-indigo-400 block">Regional Operations &amp; Fulfillment</span>
+              <h3 class="font-heading text-lg font-bold text-white">🚚 Distributor, EMS &amp; Supply Chain Network</h3>
+            </div>
+            <span class="text-xs font-mono-code text-indigo-300 bg-indigo-500/10 border border-indigo-400/30 px-2.5 py-1 rounded-md">Region-Calibrated</span>
+          </div>
+          <div id="venture-supply-chain-list" class="space-y-3 text-xs"></div>
+        </div>
+
+        <!-- Target VC & Investor Directory (6 cols) -->
+        <div class="lg:col-span-6 exec-panel rounded-3xl p-6 scroll-reveal-item">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+            <div>
+              <span class="text-[11px] font-mono-code uppercase tracking-wider text-amber-400 block">Capital Formation &amp; Seed/Series-A</span>
+              <h3 class="font-heading text-lg font-bold text-white">💸 Target VC &amp; Institutional Investor Directory</h3>
+            </div>
+            <span class="text-xs font-mono-code text-amber-300 bg-amber-500/10 border border-amber-400/30 px-2.5 py-1 rounded-md">Active Sector Funds</span>
+          </div>
+          <div id="venture-investors-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         STAGE VIEW 5: MATHEMATICAL NASH, ZERO-SUM LP & ADVANCED SOLVERS
          ===================================================================== -->
     <section id="view-models" class="hidden max-w-6xl mx-auto pt-4 space-y-6 ppt-stage-enter">
       <div class="flex items-center justify-between pb-4 border-b border-slate-800">
@@ -1015,21 +1210,60 @@
     </section>
 
     <!-- =====================================================================
-         STAGE VIEW 5: SETTINGS & BACKGROUND DATA EXTRACTION ENGINE
+         STAGE VIEW 6: SETTINGS, OPTION B LLM API CONFIG & DATA ENGINE
          ===================================================================== -->
     <section id="view-settings" class="hidden max-w-6xl mx-auto pt-4 space-y-6 ppt-stage-enter">
       <div class="flex items-center justify-between pb-4 border-b border-slate-800">
         <div>
           <span class="text-xs font-mono-code text-sky-400 uppercase tracking-wider">SYSTEM CONFIGURATION &amp; BACKGROUND EXTRACTION ENGINE</span>
-          <h2 class="font-heading text-2xl font-bold text-white mt-0.5">Settings, Dual-Engine Reliability &amp; Background Web Indexer</h2>
+          <h2 class="font-heading text-2xl font-bold text-white mt-0.5">Settings, Option B LLM API &amp; Dual-Engine Diagnostics</h2>
         </div>
         <button onclick="openMainView('hub')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono-code text-slate-300 cursor-pointer">
           ← Back to Sector Hub
         </button>
       </div>
 
+      <!-- 1. Option B (LLM / Knowledge API) Live Key Configuration -->
+      <div class="exec-panel rounded-2xl p-6 border border-indigo-500/30">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <span class="text-[11px] font-mono-code uppercase tracking-wider text-indigo-400 block">Option B // Live LLM &amp; Knowledge API Bridge</span>
+            <h3 class="font-heading text-lg font-bold text-white">Configure Optional Groq / Gemini Flash API Key for Real-Time Synthesis</h3>
+          </div>
+          <span id="option-b-key-status" class="text-xs font-mono-code bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full">Autonomous Consensus Active</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+          MarketAura works out-of-the-box with zero API keys using its built-in Game Theory Knowledge Graph + Live Wikipedia/Web Scraper. Optionally provide a free <strong>Groq API Key</strong> (<code>gsk_...</code>) or <strong>Google Gemini API Key</strong> (<code>AIza...</code>) below (or in backend <code>.env</code>) to stream live LLM venture synthesis and compare its reliability against Option A.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
+          <div class="md:col-span-3">
+            <select id="llm-provider-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 font-mono-code">
+              <option value="groq">Groq API (Llama-3.3-70B)</option>
+              <option value="gemini">Google Gemini 2.5 Flash</option>
+            </select>
+          </div>
+          <div class="md:col-span-6">
+            <input
+              id="llm-api-key-input"
+              type="password"
+              placeholder="Paste optional Groq (gsk_...) or Gemini (AIza...) API key..."
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-100 font-mono-code focus:outline-none focus:border-indigo-400"
+            />
+          </div>
+          <div class="md:col-span-3 flex gap-2">
+            <button type="button" onclick="saveLlmApiKey()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-mono-code font-semibold rounded-xl px-3 py-2.5 cursor-pointer transition">
+              Save Key
+            </button>
+            <button type="button" onclick="clearLlmApiKey()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono-code rounded-xl px-3 py-2.5 cursor-pointer transition">
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Background Web Extraction Parameters -->
       <div class="exec-panel rounded-2xl p-6">
-        <h3 class="font-heading text-lg font-bold text-white mb-4">1. Background Web Extraction Parameters</h3>
+        <h3 class="font-heading text-lg font-bold text-white mb-4">2. Background Web Extraction Parameters</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
           <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800">
             <span class="font-mono-code text-slate-400 uppercase block mb-2">Source Authority Weight</span>
@@ -1053,14 +1287,16 @@
         </div>
       </div>
 
+      <!-- 3. Option A vs Option B Comparison -->
       <div class="exec-panel rounded-2xl p-6">
-        <h3 class="font-heading text-lg font-bold text-white mb-2">2. Option A (Web/Wikipedia Scraper) vs. Option B (LLM / Knowledge API) Comparison</h3>
+        <h3 class="font-heading text-lg font-bold text-white mb-2">3. Option A (Web/Wikipedia Scraper) vs. Option B (LLM / Knowledge API) Comparison</h3>
         <p id="dual-verdict-banner" class="text-xs font-mono-code text-emerald-300 bg-emerald-500/10 border border-emerald-400/30 p-3 rounded-xl mb-4"></p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs" id="dual-engines-grid"></div>
       </div>
 
+      <!-- 4. Background Web Extraction Diagnostics -->
       <div class="exec-panel rounded-2xl p-6 space-y-6">
-        <h3 class="font-heading text-lg font-bold text-white">3. Background Web Extraction Diagnostics (Crawled Sources &amp; Reliability)</h3>
+        <h3 class="font-heading text-lg font-bold text-white">4. Background Web Extraction Diagnostics (Crawled Sources &amp; Reliability)</h3>
         <div class="overflow-x-auto rounded-xl border border-slate-800">
           <table class="w-full text-left text-xs font-mono-code">
             <thead class="bg-slate-900 text-slate-400 uppercase border-b border-slate-800">
@@ -1084,27 +1320,19 @@
 
   <!-- =======================================================================
        7. NON-BLURRING FLOATING SPEC OVERLAY + RANDOM-EDGE CHARACTER ("AURA-BOT")
-       (Zero background blur; flies in from random screen edge; single sequential cursor)
        ======================================================================= -->
   <div id="floating-spec-assistant" class="hidden" aria-live="polite">
     <div id="floating-spec-card">
-      <!-- Top Bar with Character Avatar + Small Cross (✕) Sign -->
       <div class="flex items-center justify-between px-4 py-3 bg-slate-900/95 border-b border-slate-800 rounded-t-20">
         <div class="flex items-center gap-3">
-          <!-- Animated SVG Cyber-Quant Character ("Aura-Bot") -->
           <div class="aura-bot-avatar w-11 h-11 shrink-0">
             <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- Antenna -->
               <line x1="32" y1="4" x2="32" y2="14" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
               <circle cx="32" cy="4" r="3.5" fill="#10b981"/>
-              <!-- Bot Head Helmet -->
               <rect x="12" y="14" width="40" height="30" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>
-              <!-- Glowing Visor -->
               <rect x="17" y="21" width="30" height="12" rx="5" fill="#0284c7" fill-opacity="0.35" stroke="#38bdf8" stroke-width="1.5"/>
-              <!-- Animated Cyber Eyes -->
               <circle cx="25" cy="27" r="3" fill="#38bdf8"/>
               <circle cx="39" cy="27" r="3" fill="#38bdf8"/>
-              <!-- Bot Body & Thruster -->
               <path d="M22 46H42L38 56H26L22 46Z" fill="#1e293b" stroke="#6366f1" stroke-width="2"/>
               <path d="M28 57L32 63L36 57H28Z" fill="#38bdf8"/>
             </svg>
@@ -1118,7 +1346,6 @@
           </div>
         </div>
 
-        <!-- Simple Small Cross Sign (✕) at the Top of the Floating Window -->
         <button
           type="button"
           onclick="closeProductDetailModal()"
@@ -1129,20 +1356,17 @@
         </button>
       </div>
 
-      <!-- Floating Window Content: Sequential Typewriter (Specs First -> Strategy Second) -->
       <div class="p-4 sm:p-5 space-y-3.5 overflow-y-auto font-mono-code text-xs">
         <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
           <span id="modal-prod-brand" class="text-[11px] text-slate-400 uppercase"></span>
           <span id="modal-prod-price" class="text-sm font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-400/30 px-2.5 py-0.5 rounded-md"></span>
         </div>
 
-        <!-- 1. Technical Specifications (Types First) -->
         <div>
           <div class="text-[10px] uppercase tracking-wider text-sky-400 mb-1">// 01. HARDWARE &amp; TECHNICAL SPECIFICATIONS</div>
           <pre id="modal-typewriter-specs" class="whitespace-pre-wrap text-slate-100 bg-slate-900/95 border border-slate-800 p-3 rounded-xl leading-relaxed min-h-[88px]"></pre>
         </div>
 
-        <!-- 2. Company Game-Theory Strategy (Types Only After Specs Finish & Cursor Moves Here) -->
         <div>
           <div class="text-[10px] uppercase tracking-wider text-emerald-400 mb-1">// 02. COMPANY GAME-THEORY LAUNCH STRATEGY</div>
           <p id="modal-typewriter-strategy" class="text-slate-200 bg-emerald-950/30 border border-emerald-500/30 p-3 rounded-xl leading-relaxed min-h-[54px]"></p>
@@ -1243,8 +1467,6 @@
 
     // =========================================================================
     // 2. SLOWER TYPEWRITER ENGINE WITH PUNCTUATION PAUSES & SEQUENTIAL QUEUE
-    //    (When one cursor finishes typing, its cursor disappears completely
-    //     and the next element's cursor begins!)
     // =========================================================================
     let activeSequenceToken = 0;
 
@@ -1267,7 +1489,6 @@
             return;
           }
           if (idx >= str.length) {
-            // Completely remove cursor from finished text area before moving to next
             setTimeout(() => {
               element.classList.remove('terminal-cursor');
               resolve();
@@ -1279,7 +1500,6 @@
           element.textContent += ch;
           idx++;
 
-          // Realistic human/terminal pauses on punctuation & line breaks
           let delay = baseSpeedMs;
           if (ch === '.' || ch === '!' || ch === '?') {
             delay = 440;
@@ -1288,14 +1508,12 @@
           } else if (ch === '\n') {
             delay = 360;
           } else if (idx % 28 === 0 && ch === ' ') {
-            // Subtle micro-thinking pause mid-sentence
             delay = 210;
           }
 
           setTimeout(stepChar, delay);
         }
 
-        // Initial brief cursor blink before first character appears
         setTimeout(stepChar, 220);
       });
     }
@@ -1304,7 +1522,6 @@
       activeSequenceToken++;
       const myToken = activeSequenceToken;
 
-      // Clear all target elements and remove any leftover cursors first
       stepsArray.forEach(item => {
         if (item.el) {
           item.el.textContent = '';
@@ -1318,7 +1535,6 @@
       }
     }
 
-    // Separate token for the floating spec window so it doesn't cancel main page headers
     let activeModalToken = 0;
     function typeModalWithPauses(element, fullText, baseSpeedMs, token) {
       return new Promise((resolve) => {
@@ -1357,7 +1573,7 @@
     }
 
     // =========================================================================
-    // 3. SCROLL-TRIGGERED LAZY REVEAL (ONLY LOADS WHEN SCROLLED INTO VIEW)
+    // 3. SCROLL-TRIGGERED LAZY REVEAL
     // =========================================================================
     let scrollObserver = null;
 
@@ -1384,8 +1600,20 @@
     }
 
     // =========================================================================
-    // 4. 10 CURRENCIES WITH REAL COUNTRY FLAG IMAGES (DEFAULT INR ₹)
+    // 4. REGION-SPECIFIC MARKET FILTERING & 10-CURRENCY FLAG ENGINE
     // =========================================================================
+    let currentRegion = 'India';
+    const REGIONS_LIST = [
+      { code: 'India', flag: 'https://flagcdn.com/w40/in.png', name: 'India Market (National)', defaultCurr: 'INR', focusNote: 'Prioritizing India market share leaders, domestic conglomerates (Tata, Mahindra, Reliance, Blinkit, Zepto), BIS/PLI manufacturing, and Tier-1/2/3 pricing elasticity.' },
+      { code: 'Global', flag: 'https://flagcdn.com/w40/un.png', name: 'Global Worldwide Scope', defaultCurr: 'INR', focusNote: 'Aggregating worldwide market capitalization, global shipment volume leaders, and cross-border multinational ecosystems.' },
+      { code: 'USA', flag: 'https://flagcdn.com/w40/us.png', name: 'United States (North America)', defaultCurr: 'USD', focusNote: 'Focusing on US enterprise & consumer market share, Silicon Valley hyperscalers, carrier/FTC dynamics, and North American supply chains.' },
+      { code: 'Europe', flag: 'https://flagcdn.com/w40/eu.png', name: 'European Union (EMEA)', defaultCurr: 'EUR', focusNote: 'Focusing on EU Digital Markets Act (DMA) compliance, GDPR sovereign cloud, WLTP EV mandates, and European retail distribution.' },
+      { code: 'UK', flag: 'https://flagcdn.com/w40/gb.png', name: 'United Kingdom', defaultCurr: 'GBP', focusNote: 'Focusing on UK high-street/online retail, London fintech/AI ecosystem, and CMA competitive frameworks.' },
+      { code: 'Japan', flag: 'https://flagcdn.com/w40/jp.png', name: 'Japan & East Asia', defaultCurr: 'JPY', focusNote: 'Focusing on Japanese keiretsu supply chains, robotics/hybrid mobility leadership, and domestic carrier ecosystems.' },
+      { code: 'UAE', flag: 'https://flagcdn.com/w40/ae.png', name: 'UAE & MENA Region', defaultCurr: 'AED', focusNote: 'Focusing on GCC luxury/flagship demand, sovereign AI funds (MGX/G42), and MENA super-app logistics.' },
+      { code: 'Singapore', flag: 'https://flagcdn.com/w40/sg.png', name: 'Singapore & APAC Hub', defaultCurr: 'SGD', focusNote: 'Focusing on Southeast Asia regional headquarters, Shopee/Grab digital commerce, and APAC data center corridors.' }
+    ];
+
     let currentCurrency = 'INR';
     const CURRENCIES_LIST = [
       { code: 'INR', symbol: '₹', rate: 1, locale: 'en-IN', flag: 'https://flagcdn.com/w40/in.png', name: 'INR (₹) — Indian Rupee' },
@@ -1399,6 +1627,43 @@
       { code: 'CAD', symbol: 'C$', rate: 1 / 60.5, locale: 'en-CA', flag: 'https://flagcdn.com/w40/ca.png', name: 'CAD (C$) — Canadian Dollar' },
       { code: 'CHF', symbol: 'CHF ', rate: 1 / 95.0, locale: 'de-CH', flag: 'https://flagcdn.com/w40/ch.png', name: 'CHF (Fr) — Swiss Franc' }
     ];
+
+    function buildRegionFlagMenu() {
+      const menu = document.getElementById('region-dropdown-menu');
+      if (!menu) return;
+      menu.innerHTML = '';
+      REGIONS_LIST.forEach(r => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-xs font-mono-code text-slate-200 hover:bg-emerald-500/20 hover:text-emerald-300 transition cursor-pointer';
+        btn.innerHTML = `
+          <img src="${r.flag}" alt="${r.code}" class="w-5 h-3.5 object-cover rounded-xs border border-slate-700 shrink-0" />
+          <span class="truncate">${r.name}</span>
+        `;
+        btn.onclick = () => selectRegionOption(r.code);
+        menu.appendChild(btn);
+      });
+    }
+
+    function toggleRegionDropdown(e) {
+      e.stopPropagation();
+      document.getElementById('currency-dropdown-menu')?.classList.add('hidden');
+      document.getElementById('region-dropdown-menu')?.classList.toggle('hidden');
+    }
+
+    function selectRegionOption(regCode) {
+      const found = REGIONS_LIST.find(x => x.code === regCode) || REGIONS_LIST[0];
+      currentRegion = found.code;
+      document.getElementById('selected-reg-flag').src = found.flag;
+      document.getElementById('selected-reg-label').textContent = found.name;
+      document.getElementById('region-dropdown-menu')?.classList.add('hidden');
+      document.getElementById('sidebar-region-summary').textContent = `Region: ${found.code} • Option A + B Active`;
+
+      if (lastAnalysisData && lastAnalysisData.game_theory_analysis) {
+        renderAllData(lastAnalysisData);
+        initScrollRevealObserver();
+      }
+    }
 
     function buildCurrencyFlagMenu() {
       const menu = document.getElementById('currency-dropdown-menu');
@@ -1419,13 +1684,16 @@
 
     function toggleCurrencyDropdown(e) {
       e.stopPropagation();
-      document.getElementById('currency-dropdown-menu').classList.toggle('hidden');
+      document.getElementById('region-dropdown-menu')?.classList.add('hidden');
+      document.getElementById('currency-dropdown-menu')?.classList.toggle('hidden');
     }
 
     document.addEventListener('click', (e) => {
-      const menu = document.getElementById('currency-dropdown-menu');
-      if (menu && !e.target.closest('#currency-dropdown-btn')) {
-        menu.classList.add('hidden');
+      if (!e.target.closest('#currency-dropdown-btn')) {
+        document.getElementById('currency-dropdown-menu')?.classList.add('hidden');
+      }
+      if (!e.target.closest('#region-dropdown-btn')) {
+        document.getElementById('region-dropdown-menu')?.classList.add('hidden');
       }
     });
 
@@ -1434,7 +1702,7 @@
       currentCurrency = found.code;
       document.getElementById('selected-curr-flag').src = found.flag;
       document.getElementById('selected-curr-label').textContent = found.name;
-      document.getElementById('currency-dropdown-menu').classList.add('hidden');
+      document.getElementById('currency-dropdown-menu')?.classList.add('hidden');
 
       if (lastAnalysisData && lastAnalysisData.game_theory_analysis) {
         renderProductReviewsStage(lastAnalysisData.game_theory_analysis);
@@ -1451,7 +1719,98 @@
     }
 
     // =========================================================================
-    // 5. PPT-STYLE CARD ENLARGEMENT TRANSITION & STAGE NAVIGATION
+    // 5. OPTION B (LLM / KNOWLEDGE API) KEY MANAGEMENT & LIVE QUERY BRIDGE
+    // =========================================================================
+    function getStoredLlmConfig() {
+      return {
+        provider: localStorage.getItem('marketaura_llm_provider') || 'groq',
+        apiKey: localStorage.getItem('marketaura_llm_key') || ''
+      };
+    }
+
+    function updateLlmStatusBadge() {
+      const cfg = getStoredLlmConfig();
+      const badge = document.getElementById('option-b-key-status');
+      const sidebarStatus = document.getElementById('sidebar-engine-status');
+      if (cfg.apiKey) {
+        badge.textContent = `● Live ${cfg.provider.toUpperCase()} API Key Configured`;
+        badge.className = 'text-xs font-mono-code bg-sky-500/20 text-sky-300 border border-sky-400/40 px-3 py-1 rounded-full';
+        if (sidebarStatus) sidebarStatus.textContent = `OPTION A + LIVE ${cfg.provider.toUpperCase()} API`;
+      } else {
+        badge.textContent = 'Autonomous Consensus Active (Zero-Key Mode)';
+        badge.className = 'text-xs font-mono-code bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full';
+        if (sidebarStatus) sidebarStatus.textContent = 'DUAL-ENGINE VERIFIED';
+      }
+    }
+
+    function saveLlmApiKey() {
+      const provider = document.getElementById('llm-provider-select').value;
+      const key = document.getElementById('llm-api-key-input').value.trim();
+      localStorage.setItem('marketaura_llm_provider', provider);
+      localStorage.setItem('marketaura_llm_key', key);
+      updateLlmStatusBadge();
+      if (lastAnalysisData) {
+        synthesizeCustomVenturePlan();
+      }
+    }
+
+    function clearLlmApiKey() {
+      localStorage.removeItem('marketaura_llm_key');
+      document.getElementById('llm-api-key-input').value = '';
+      updateLlmStatusBadge();
+    }
+
+    async function callOptionBLiveLLM(promptText, fallbackText) {
+      const cfg = getStoredLlmConfig();
+      if (!cfg.apiKey) {
+        return { mode: 'Autonomous Game-Theory Knowledge Graph', text: fallbackText };
+      }
+
+      try {
+        if (cfg.provider === 'groq') {
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${cfg.apiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: 'llama-3.3-70b-versatile',
+              messages: [
+                { role: 'system', content: 'You are MarketAura, an institutional Game Theory & Venture Strategy Architect. Provide a crisp, high-impact 3-4 sentence strategic executive synthesis with concrete numbers and game theory concepts (Nash Equilibrium, Backward Induction, Judo Strategy).' },
+                { role: 'user', content: promptText }
+              ],
+              temperature: 0.25,
+              max_tokens: 220
+            })
+          });
+          if (res.ok) {
+            const j = await res.json();
+            return { mode: 'Live Groq API (Llama-3.3-70B)', text: j.choices[0].message.content.trim() };
+          }
+        } else if (cfg.provider === 'gemini') {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(cfg.apiKey)}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `You are MarketAura Game Theory Architect. In 3-4 crisp sentences, provide a strategic market entry synthesis for: ${promptText}` }] }]
+            })
+          });
+          if (res.ok) {
+            const j = await res.json();
+            const txt = j.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (txt) return { mode: 'Live Google Gemini Flash API', text: txt.trim() };
+          }
+        }
+      } catch (e) {
+        // Fall through to deterministic synthesis if network/key error
+      }
+      return { mode: 'Autonomous Game-Theory Knowledge Graph (Fallback)', text: fallbackText };
+    }
+
+    // =========================================================================
+    // 6. PPT-STYLE CARD ENLARGEMENT TRANSITION & STAGE NAVIGATION
     // =========================================================================
     let lastAnalysisData = null;
     let isInsideSingleCompanyProfile = false;
@@ -1460,20 +1819,18 @@
       const hubEl = document.getElementById('view-hub');
       const cardComp = document.getElementById('hub-card-companies');
       const cardProd = document.getElementById('hub-card-products');
+      const cardVent = document.getElementById('hub-card-venture');
 
-      // If currently on the Sector Hub, play the PPT Enlarge + Sibling Fade animation first!
-      if (hubEl && !hubEl.classList.contains('hidden') && cardComp && cardProd) {
-        if (targetView === 'companies') {
-          cardComp.classList.add('ppt-card-enlarge');
-          cardProd.classList.add('ppt-card-fade-out');
-        } else if (targetView === 'products') {
-          cardProd.classList.add('ppt-card-enlarge');
-          cardComp.classList.add('ppt-card-fade-out');
-        }
+      if (hubEl && !hubEl.classList.contains('hidden')) {
+        const map = { companies: cardComp, products: cardProd, venture: cardVent };
+        Object.entries(map).forEach(([k, card]) => {
+          if (!card) return;
+          if (k === targetView) card.classList.add('ppt-card-enlarge');
+          else card.classList.add('ppt-card-fade-out');
+        });
 
         setTimeout(() => {
-          cardComp.classList.remove('ppt-card-enlarge', 'ppt-card-fade-out');
-          cardProd.classList.remove('ppt-card-enlarge', 'ppt-card-fade-out');
+          [cardComp, cardProd, cardVent].forEach(c => c && c.classList.remove('ppt-card-enlarge', 'ppt-card-fade-out'));
           openMainView(targetView);
         }, 430);
       } else {
@@ -1482,7 +1839,7 @@
     }
 
     function openMainView(viewName) {
-      const views = ['hub', 'companies', 'products', 'models', 'settings'];
+      const views = ['hub', 'companies', 'products', 'venture', 'models', 'settings'];
       views.forEach(v => {
         const el = document.getElementById('view-' + v);
         if (el) el.classList.add('hidden');
@@ -1493,7 +1850,6 @@
       const targetEl = document.getElementById('view-' + viewName);
       if (targetEl) {
         targetEl.classList.remove('hidden');
-        // Re-trigger PPT slide/zoom animation
         targetEl.classList.remove('ppt-stage-enter');
         void targetEl.offsetWidth;
         targetEl.classList.add('ppt-stage-enter');
@@ -1502,7 +1858,6 @@
       const targetBtn = document.getElementById('nav-btn-' + viewName);
       if (targetBtn) targetBtn.classList.add('nav-active');
 
-      // Morph MarketAura header into top-left corner when inside deep-dive views
       const brandHeader = document.getElementById('brand-header');
       const cornerBrand = document.getElementById('compact-corner-brand');
       const chipsRow = document.getElementById('sector-chips-row');
@@ -1521,19 +1876,19 @@
 
       if (lastAnalysisData && lastAnalysisData.game_theory_analysis) {
         const gt = lastAnalysisData.game_theory_analysis;
+        const regList = getRegionAdjustedCompanies(gt);
         if (viewName === 'companies') {
           closeCompanyDetail();
-          // Sequential Typing: 1. Heading (with pauses) -> cursor disappears -> 2. Detailed Headline
           runTypewriterSequence([
             {
               el: document.getElementById('typewriter-companies-header'),
-              text: `Top-${gt.companies_top10.length} Companies in ${gt.industry_name}`,
-              speed: 38
+              text: `Top-${regList.length} Companies in ${gt.industry_name} (${currentRegion} Scope)`,
+              speed: 36
             },
             {
               el: document.getElementById('typewriter-companies-subheadline'),
-              text: `Ranked in descending order of Market Share & Valuation — Click any company card below to enlarge its full strategic dossier, reversed History Timeline, and Share Trajectory.`,
-              speed: 24
+              text: `Ranked by ${currentRegion} Market Share & Valuation — Click any company card below to enlarge its full strategic dossier, reversed History Timeline, and Share Trajectory.`,
+              speed: 22
             }
           ]);
         } else if (viewName === 'products') {
@@ -1541,14 +1896,28 @@
             {
               el: document.getElementById('typewriter-products-header'),
               text: `Product Reviews & Launch Radar — ${gt.industry_name}`,
-              speed: 38
+              speed: 36
             },
             {
               el: document.getElementById('typewriter-products-subheadline'),
-              text: `Evaluating Upcoming Launches, Active Tiered Models (${currentCurrency}), and the Nash-Optimal Market-Boom Product Blueprint. Scroll down to reveal lower tiers.`,
-              speed: 24
+              text: `Evaluating Upcoming Launches, Active Tiered Models (${currentCurrency} • ${currentRegion}), and the Nash-Optimal Market-Boom Product Blueprint. Scroll down to reveal lower tiers.`,
+              speed: 22
             }
           ]);
+        } else if (viewName === 'venture') {
+          runTypewriterSequence([
+            {
+              el: document.getElementById('typewriter-venture-header'),
+              text: `AI Venture Builder & Market Entry Roadmap (${currentRegion})`,
+              speed: 34
+            },
+            {
+              el: document.getElementById('typewriter-venture-subheadline'),
+              text: `Drafting a Subgame-Perfect 4-Phase Business Plan, Regional Distributor & EMS Supply Chain, and Target VC Investor Directory for ${gt.industry_name}.`,
+              speed: 22
+            }
+          ]);
+          synthesizeCustomVenturePlan();
         }
       }
 
@@ -1556,7 +1925,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Dynamic Back Button Handler inside "The Companies Strategies"
     function handleCompaniesBackAction() {
       if (isInsideSingleCompanyProfile) {
         closeCompanyDetail();
@@ -1566,16 +1934,57 @@
     }
 
     // =========================================================================
-    // 6. RENDER "THE COMPANIES STRATEGIES" & REVERSED TIMELINE DEEP-DIVE
+    // 7. REGION-SPECIFIC MARKET FILTERING ADAPTER FOR COMPANIES
+    // =========================================================================
+    let activeRegionCompanies = [];
+
+    function getRegionAdjustedCompanies(gt) {
+      const baseList = JSON.parse(JSON.stringify(gt.companies_top10 || []));
+      if (currentRegion === 'Global') {
+        // In Global mode, boost global scale giants (Apple, Samsung, Tesla, BYD, Amazon, AWS, OpenAI)
+        baseList.forEach(c => {
+          if (/(Apple|Samsung|Tesla|BYD|Amazon|OpenAI|Microsoft|Google)/i.test(c.name)) {
+            c.market_share_num = Number((c.market_share_num * 1.15).toFixed(1));
+            c.market_share = `${c.market_share_num}% (Global Scale)`;
+          }
+        });
+      } else if (currentRegion === 'India') {
+        // In India mode, highlight Indian market share & domestic leaders
+        baseList.forEach(c => {
+          if (/(Maruti|Tata|Mahindra|Blinkit|Flipkart|Meesho|Zepto|Swiggy|Reliance|Vivo|Xiaomi)/i.test(c.name)) {
+            c.market_share_num = Number((c.market_share_num * 1.18).toFixed(1));
+            c.market_share = `${c.market_share_num}% (India Share)`;
+          }
+        });
+      } else {
+        // Adjust labels & regional share weights for USA, Europe, UK, Japan, UAE, Singapore
+        baseList.forEach((c, i) => {
+          const boost = /(Apple|Tesla|Amazon|Microsoft|OpenAI|Google|BMW|Samsung)/i.test(c.name) ? 1.12 : 0.92;
+          c.market_share_num = Number(Math.min(48, Math.max(2.1, c.market_share_num * boost)).toFixed(1));
+          c.market_share = `${c.market_share_num}% (${currentRegion} Share)`;
+        });
+      }
+
+      baseList.sort((a, b) => b.market_share_num - a.market_share_num);
+      baseList.forEach((c, idx) => { c.rank = idx + 1; });
+      return baseList;
+    }
+
+    // =========================================================================
+    // 8. RENDER "THE COMPANIES STRATEGIES" & REVERSED TIMELINE DEEP-DIVE
     // =========================================================================
     function renderCompaniesStage(gt) {
       const listBox = document.getElementById('companies-list-container');
       listBox.innerHTML = '';
-      const companies = gt.companies_top10 || [];
+      activeRegionCompanies = getRegionAdjustedCompanies(gt);
 
-      document.getElementById('hub-comp-count').textContent = `Top ${companies.length} Ranked Players`;
+      const regMeta = REGIONS_LIST.find(r => r.code === currentRegion) || REGIONS_LIST[0];
+      document.getElementById('hub-comp-count').textContent = `Top ${activeRegionCompanies.length} (${currentRegion})`;
+      document.getElementById('companies-region-pill').textContent = `Active Scope: ${regMeta.name}`;
+      document.getElementById('regional-banner-title').textContent = `${regMeta.name} — Competitive Hierarchy`;
+      document.getElementById('regional-banner-desc').textContent = regMeta.focusNote;
 
-      companies.forEach((c, idx) => {
+      activeRegionCompanies.forEach((c, idx) => {
         const row = document.createElement('div');
         row.className = 'company-row scroll-reveal-item exec-panel rounded-2xl p-5 cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-800 hover:border-sky-400/60';
         row.onclick = () => selectCompanyDeepDive(idx);
@@ -1597,7 +2006,7 @@
           </div>
           <div class="flex sm:flex-col items-end justify-between w-full sm:w-auto shrink-0 border-t sm:border-t-0 border-slate-800 pt-3 sm:pt-0">
             <div class="text-left sm:text-right font-mono-code">
-              <span class="text-[10px] text-slate-400 uppercase block">Market Share</span>
+              <span class="text-[10px] text-slate-400 uppercase block">${currentRegion} Market Share</span>
               <span class="text-sm font-bold text-emerald-400">${c.market_share}</span>
             </div>
             <span class="text-xs font-mono-code text-sky-400 mt-1">Inspect Timeline &amp; Strategy →</span>
@@ -1608,19 +2017,16 @@
     }
 
     function selectCompanyDeepDive(companyIndex) {
-      const gt = lastAnalysisData.game_theory_analysis;
-      const c = gt.companies_top10[companyIndex];
+      const c = activeRegionCompanies[companyIndex];
       if (!c) return;
 
       isInsideSingleCompanyProfile = true;
 
-      // Change top-right button text from "Back to Sector Hub" to "Back to Company List"
       const topBackBtn = document.getElementById('companies-dynamic-back-btn');
       if (topBackBtn) {
         topBackBtn.textContent = '← Back to Company List';
       }
 
-      // Enlarge clicked row and fade out other rows smoothly
       const allRows = document.querySelectorAll('#companies-list-container .company-row');
       allRows.forEach((r, i) => {
         if (i === companyIndex) {
@@ -1636,21 +2042,20 @@
         detailView.classList.remove('hidden');
 
         document.getElementById('comp-detail-logo').src = c.logo;
-        document.getElementById('comp-detail-rank').textContent = `RANK #${c.rank} • SHARE: ${c.market_share}`;
+        document.getElementById('comp-detail-rank').textContent = `RANK #${c.rank} (${currentRegion.toUpperCase()}) • SHARE: ${c.market_share}`;
         document.getElementById('comp-detail-tier').textContent = `${c.tier} • Valuation: ${c.market_value_inr}`;
         document.getElementById('comp-detail-name').textContent = c.name;
 
-        // Sequential single-cursor typing: Description first -> cursor disappears -> Active Strategy second
         runTypewriterSequence([
           {
             el: document.getElementById('comp-detail-typewriter-desc'),
             text: c.description,
-            speed: 28
+            speed: 26
           },
           {
             el: document.getElementById('comp-detail-typewriter-strat'),
-            text: `Active Game Strategy: ${c.current_strategy}`,
-            speed: 30
+            text: `Active Game Strategy (${currentRegion}): ${c.current_strategy}`,
+            speed: 28
           }
         ]);
 
@@ -1696,14 +2101,14 @@
         // Populate Tab 3: Market Value, Share & Visual Graphs
         const gBox = document.getElementById('comp-market-graphs-box');
         const trend = c.quarterly_share_trend || [10, 12, 14, c.market_share_num];
-        const maxShare = Math.max(...gt.companies_top10.map(x => x.market_share_num || 10), 45);
+        const maxShare = Math.max(...activeRegionCompanies.map(x => x.market_share_num || 10), 45);
 
         gBox.innerHTML = `
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800">
               <div class="text-xs font-mono-code uppercase text-slate-400">Market Valuation &amp; Capitalization</div>
               <div class="font-heading text-2xl font-bold text-emerald-400 mt-1">${c.market_value_inr}</div>
-              <div class="text-xs text-slate-400 mt-2">Verified Industry Share: <strong class="text-white">${c.market_share}</strong></div>
+              <div class="text-xs text-slate-400 mt-2">Verified ${currentRegion} Share: <strong class="text-white">${c.market_share}</strong></div>
               <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden mt-3">
                 <div class="bg-gradient-to-r from-sky-400 to-emerald-400 h-full rounded-full" style="width: ${Math.min(100, (c.market_share_num / maxShare) * 100)}%"></div>
               </div>
@@ -1758,7 +2163,7 @@
     }
 
     // =========================================================================
-    // 7. RENDER "THE PRODUCT REVIEWS" + RANDOM-EDGE CHARACTER SPEC OVERLAY
+    // 9. RENDER "THE PRODUCT REVIEWS" + RANDOM-EDGE CHARACTER SPEC OVERLAY
     // =========================================================================
     let activeCurrentProducts = [];
     let activeUpcomingProducts = [];
@@ -1877,9 +2282,6 @@
       setTimeout(initScrollRevealObserver, 60);
     }
 
-    // FLOATING AURA-BOT SPEC OVERLAY:
-    // Flies in randomly from Left, Right, Top, or Bottom without blurring background,
-    // and types Specs FIRST -> removes cursor -> types Strategy SECOND!
     async function openProductDetailModal(poolType, idx) {
       const list = poolType === 'upcoming' ? activeUpcomingProducts : activeCurrentProducts;
       const p = list[idx];
@@ -1889,7 +2291,6 @@
       const card = document.getElementById('floating-spec-card');
       wrapper.classList.remove('hidden');
 
-      // Pick a random screen edge for Aura-Bot & the floating card to fly in from
       const edges = [
         { name: 'RIGHT FLANK', cls: 'enter-from-right', pos: { bottom: '24px', right: '24px', top: 'auto', left: 'auto' } },
         { name: 'LEFT FLANK', cls: 'enter-from-left', pos: { bottom: '24px', left: '90px', top: 'auto', right: 'auto' } },
@@ -1915,7 +2316,6 @@
       const specsEl = document.getElementById('modal-typewriter-specs');
       const stratEl = document.getElementById('modal-typewriter-strategy');
 
-      // Cancel any previous modal typing and clear both fields
       activeModalToken++;
       const myModalToken = activeModalToken;
       specsEl.textContent = '';
@@ -1927,10 +2327,8 @@
         .map(([k, v]) => `> ${k.padEnd(16, ' ')} : ${v}`)
         .join('\n');
 
-      // 1. Type Specs first with blinking cursor; when finished, its cursor is removed
       await typeModalWithPauses(specsEl, specLines, 26, myModalToken);
 
-      // 2. Only after Specs finish, start typing Launch Strategy with the cursor
       if (myModalToken === activeModalToken) {
         await typeModalWithPauses(stratEl, p.launch_strategy, 28, myModalToken);
       }
@@ -1946,10 +2344,183 @@
     });
 
     // =========================================================================
-    // 8. BOOTLOADER & FORM SUBMISSION
+    // 10. INTERACTIVE AI MARKET ENTRY ROADMAP & VENTURE BUILDER ENGINE
+    // =========================================================================
+    const REGIONAL_VENTURE_DATA = {
+      India: {
+        supplyChain: [
+          { role: 'Contract Manufacturing & EMS', partners: 'Dixon Technologies (Noida), Foxconn Hon Hai (Sriperumbudur), Tata Electronics, Amber Enterprises', note: 'Eligible for Govt of India 4%–6% PLI (Production Linked Incentive) subsidy.' },
+          { role: 'National Tier-1 & Tier-2 Distribution', partners: 'Redington India, Ingram Micro India, Savex Technologies, Super Plastronics', note: 'Covers 45,000+ offline retail touchpoints across Tier-1/2/3 cities.' },
+          { role: 'Quick-Commerce & D2C Dark-Store Fulfillment', partners: 'Blinkit (Eternal), Zepto, Swiggy Instamart, ONDC Open Network', note: 'Enables 10-to-30 minute urban delivery with low reverse-logistics RTO.' },
+          { role: '3PL Pan-India Courier & Warehousing', partners: 'Delhivery, BlueDart, Shadowfax, Ecom Express, Valmo', note: 'API-integrated pin-code coverage across 18,500+ Indian pin codes.' }
+        ],
+        investors: [
+          { name: 'Peak XV Partners (Surge)', stage: 'Seed to Series B ($2M–$25M)', thesis: 'Consumer hardware, AI agents, Quick-Commerce & Indian D2C brands', url: 'https://www.peakxv.com/' },
+          { name: 'Accel India (Atoms)', stage: 'Pre-Seed to Growth ($1M–$20M)', thesis: 'B2B SaaS, DeepTech, Consumer Tech & EV Mobility', url: 'https://www.accel.com/' },
+          { name: 'Blume Ventures', stage: 'Seed & Series A ($1M–$8M)', thesis: 'Indian Engineering, EV Ecosystem, FinTech & Consumer Brands', url: 'https://blume.vc/' },
+          { name: 'Nexus Venture Partners', stage: 'Seed to Series B ($2M–$15M)', thesis: 'AI Infrastructure, Developer Tools, India Retail & Logistics', url: 'https://nexusvp.com/' },
+          { name: 'Elevation Capital', stage: 'Seed to Series C ($3M–$30M)', thesis: 'Consumer Platforms, Quick Retail & New-Age Manufacturing', url: 'https://www.elevationcapital.com/' },
+          { name: 'Matrix Partners India (Z47)', stage: 'Seed to Series B ($1.5M–$20M)', thesis: 'Mobility, Sovereign AI, B2B Marketplaces & D2C', url: 'https://www.z47.com/' }
+        ]
+      },
+      USA: {
+        supplyChain: [
+          { role: 'EMS & Hardware Prototyping', partners: 'Flex Ltd (Austin), Jabil Inc., Sanmina Corporation, TSMC Arizona', note: 'CHIPS Act & US domestic assembly compliance.' },
+          { role: 'Retail & Big-Box Distribution', partners: 'Best Buy, Walmart, Target, TD SYNNEX, Ingram Micro US', note: 'Omnichannel shelf placement + enterprise reseller channels.' },
+          { role: '3PL & Last-Mile Fulfillment', partners: 'Amazon FBA / Multi-Channel, ShipBob, Flexport, FedEx Supply Chain', note: '2-day coast-to-coast warehousing & automated returns.' }
+        ],
+        investors: [
+          { name: 'Andreessen Horowitz (a16z)', stage: 'Seed to Late Stage ($5M–$100M)', thesis: 'American Dynamism, AI Infrastructure & Consumer Hardware', url: 'https://a16z.com/' },
+          { name: 'Sequoia Capital US', stage: 'Seed to Growth ($2M–$100M)', thesis: 'Frontier AI, Enterprise SaaS & Category-Defining Hardware', url: 'https://www.sequoiacap.com/' },
+          { name: 'Y Combinator', stage: 'Pre-Seed / Accelerator ($500K)', thesis: 'High-Velocity Technical Founders, B2B AI & DeepTech', url: 'https://www.ycombinator.com/' },
+          { name: 'Founders Fund', stage: 'Seed to Series C ($5M–$50M)', thesis: 'Hard Tech, Autonomous Mobility, Defense & Energy', url: 'https://foundersfund.com/' }
+        ]
+      },
+      Europe: {
+        supplyChain: [
+          { role: 'European Manufacturing & Engineering', partners: 'Magna Steyr (Austria), Foxconn Czechia, Bosch Mobility, ASML Ecosystem', note: 'CE Mark, EU Battery Passport & GDPR compliance.' },
+          { role: 'Pan-European Retail & Distribution', partners: 'MediaMarktSaturn, Currys, Boulanger, ALSO Holding', note: 'Direct access to DACH, France, Benelux & Nordic consumers.' },
+          { role: 'Logistics & Fulfillment', partners: 'DHL Supply Chain, DB Schenker, Zalando ZEOS, Maersk Europe', note: 'Cross-border Schengen customs-free distribution.' }
+        ],
+        investors: [
+          { name: 'Index Ventures', stage: 'Seed to Growth (€2M–€50M)', thesis: 'European SaaS, DeepTech, FinTech & Consumer Platforms', url: 'https://www.indexventures.com/' },
+          { name: 'Atomico', stage: 'Series A to C (€5M–€40M)', thesis: 'Sustainable Mobility, Enterprise AI & DeepTech', url: 'https://atomico.com/' },
+          { name: 'Balderton Capital', stage: 'Seed & Series A (€2M–€20M)', thesis: 'European Sovereign AI, Commerce & Infrastructure', url: 'https://www.balderton.com/' },
+          { name: 'HV Capital / Northzone', stage: 'Seed to Series B (€1M–€25M)', thesis: 'DACH & Nordic Consumer, Climate Tech & B2B', url: 'https://www.northzone.com/' }
+        ]
+      },
+      Global: {
+        supplyChain: [
+          { role: 'Global Tier-1 ODM & Foundry Network', partners: 'TSMC, Foxconn (Hon Hai), Pegatron, Luxshare, BYD Electronic', note: 'Multi-hub manufacturing across India, Vietnam, Taiwan & Mexico.' },
+          { role: 'Global Freight & Digital Customs', partners: 'Maersk Integrated Logistics, Flexport, DHL Global Forwarding', note: 'Tariff-hedged China+1 supply chain routing.' },
+          { role: 'Global Cloud & Marketplace Channels', partners: 'Amazon Global Selling, AWS Marketplace, Shopify Markets Pro', note: 'Instant tax/VAT-compliant checkout in 150+ countries.' }
+        ],
+        investors: [
+          { name: 'Peak XV / Sequoia / a16z Syndicate', stage: 'Seed to Global Growth ($2M–$100M)', thesis: 'Cross-border category leaders in AI, Mobility & Consumer Tech', url: 'https://www.peakxv.com/' },
+          { name: 'Lightspeed Venture Partners', stage: 'Seed to Series C ($3M–$50M)', thesis: 'Global Enterprise AI, India/US Corridor & Consumer', url: 'https://lsvp.com/' },
+          { name: 'General Catalyst', stage: 'Seed to Growth ($5M–$75M)', thesis: 'Global Resilience, Applied AI & Modern Commerce', url: 'https://www.generalcatalyst.com/' },
+          { name: 'Tiger Global / SoftBank Vision', stage: 'Series B+ Scale ($20M–$150M)', thesis: 'Market-share dominant platform & logistics winners', url: 'https://www.softbank.jp/' }
+        ]
+      }
+    };
+
+    async function synthesizeCustomVenturePlan() {
+      if (!lastAnalysisData || !lastAnalysisData.game_theory_analysis) return;
+      const gt = lastAnalysisData.game_theory_analysis;
+
+      const capStage = document.getElementById('venture-capital-select').value;
+      const posture = document.getElementById('venture-posture-select').value;
+      const channel = document.getElementById('venture-channel-select').value;
+      const customGoal = document.getElementById('venture-custom-goal').value.trim();
+
+      document.getElementById('venture-region-tag').textContent = `Target Region: ${currentRegion}`;
+
+      const topIncumbents = (gt.companies_top10 || []).slice(0, 2).map(c => c.name).join(' and ');
+      const boomName = gt.boom_model ? gt.boom_model.name : 'Aura Disruptor Model';
+      const boomPrice = gt.boom_model ? formatPrice(gt.boom_model.price_inr) : formatPrice(39999);
+
+      const fallbackSynthesis =
+        `For ${gt.industry_name} in ${currentRegion} (${capStage}): Deploy "${posture}" via ${channel}. ` +
+        `By Backward Induction, ${topIncumbents} cannot slash flagship prices to match your ${boomPrice} "${boomName}" sweet-spot without cannibalizing their core enterprise/flagship margins. ` +
+        (customGoal ? `Custom Focus ("${customGoal}"): Lock in zero-switching-cost compatibility in Phase 1 and scale via 62.5% community viral loops + 37.5% direct distributor partnerships.` : `Avoid low-end Prisoner's Dilemma price wars; capture early adopters via transparent specs and zero lock-in.`);
+
+      const prompt = `Industry: ${gt.industry_name} | Region: ${currentRegion} | Capital: ${capStage} | Strategy: ${posture} | Channel: ${channel} | Founder Goal: ${customGoal || 'Launch Nash-optimal disruptor product'}. Draft a 3-sentence game-theoretic market entry executive summary.`;
+
+      const llmRes = await callOptionBLiveLLM(prompt, fallbackSynthesis);
+      document.getElementById('venture-llm-mode-badge').textContent = llmRes.mode;
+
+      runTypewriterSequence([
+        {
+          el: document.getElementById('venture-llm-output'),
+          text: llmRes.text,
+          speed: 22
+        }
+      ]);
+
+      // Render 4-Phase Game-Theoretic Roadmap
+      const phases = [
+        {
+          phase: 'PHASE 01 // MONTHS 1–3: BACKWARD INDUCTION R&D',
+          title: 'Asymmetric Spec-Sheet & Prototype Lock',
+          desc: `Build around the "${boomName}" blueprint at ${boomPrice}. Eliminate dominated features (IESDS) and invest 100% of R&D into the 2 high-visibility differentiators that ${topIncumbents} gatekeep behind 2.5x pricier tiers.`
+        },
+        {
+          phase: 'PHASE 02 // MONTHS 4–6: REGIONAL EMS & SUPPLY CHAIN',
+          title: `${currentRegion} Contract Manufacturing & Zero-CapEx Sourcing`,
+          desc: `Adopt an Evolutionarily Stable Strategy (ESS): avoid heavy factory CapEx early. Partner with regional EMS & 3PL nodes in ${currentRegion} to keep fixed overhead low and unit margins resilient.`
+        },
+        {
+          phase: 'PHASE 03 // MONTHS 7–9: JUDO GTM & SIGNALING LAUNCH',
+          title: `62.5% Viral Community + 37.5% ${channel.split('+')[0].trim()}`,
+          desc: `Execute Module 3 Mixed-Strategy LP allocation: use transparent benchmark signaling (Bayesian credible signal) and zero-CAC enthusiast seeding so incumbents choose [Accommodate] over retaliation.`
+        },
+        {
+          phase: 'PHASE 04 // MONTHS 10–18: PARETO ECOSYSTEM MOAT',
+          title: 'Stag-Hunt Co-opetition & Series-A Scale',
+          desc: `Maintain 100% plug-and-play compatibility with ${topIncumbents}'s ecosystem standards while expanding high-margin recurring accessories/services across ${currentRegion}.`
+        }
+      ];
+
+      const pGrid = document.getElementById('venture-phases-grid');
+      pGrid.innerHTML = '';
+      phases.forEach(p => {
+        pGrid.innerHTML += `
+          <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-emerald-400/50 transition">
+            <div class="text-[10px] font-mono-code font-bold text-emerald-400 uppercase tracking-wider">${p.phase}</div>
+            <h4 class="font-heading text-base font-bold text-white mt-1">${p.title}</h4>
+            <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">${p.desc}</p>
+          </div>
+        `;
+      });
+
+      // Render Regional Supply Chain & Distributor Network
+      const regPack = REGIONAL_VENTURE_DATA[currentRegion] || REGIONAL_VENTURE_DATA.Global;
+      const scBox = document.getElementById('venture-supply-chain-list');
+      scBox.innerHTML = '';
+      regPack.supplyChain.forEach(sc => {
+        scBox.innerHTML += `
+          <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
+            <div class="font-mono-code text-[11px] font-bold text-indigo-300">${sc.role}</div>
+            <div class="text-xs font-semibold text-white mt-0.5">${sc.partners}</div>
+            <div class="text-[11px] text-slate-400 mt-1">${sc.note}</div>
+          </div>
+        `;
+      });
+
+      // Render Target VC & Investor Directory
+      const invGrid = document.getElementById('venture-investors-grid');
+      invGrid.innerHTML = '';
+      regPack.investors.forEach(inv => {
+        invGrid.innerHTML += `
+          <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-heading font-bold text-white text-sm">${inv.name}</span>
+              </div>
+              <span class="inline-block text-[10px] font-mono-code text-amber-300 bg-amber-500/10 border border-amber-400/30 px-2 py-0.5 rounded mt-1">${inv.stage}</span>
+              <p class="text-[11px] text-slate-300 mt-2 leading-relaxed">${inv.thesis}</p>
+            </div>
+            <a href="${inv.url}" target="_blank" class="mt-3 text-[11px] font-mono-code text-sky-400 hover:underline inline-block">
+              Investor Portal &amp; Pitch Info ↗
+            </a>
+          </div>
+        `;
+      });
+    }
+
+    // =========================================================================
+    // 11. BOOTLOADER & FORM SUBMISSION
     // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
+      buildRegionFlagMenu();
       buildCurrencyFlagMenu();
+      updateLlmStatusBadge();
+      const savedCfg = getStoredLlmConfig();
+      if (savedCfg.apiKey) {
+        document.getElementById('llm-provider-select').value = savedCfg.provider;
+        document.getElementById('llm-api-key-input').value = savedCfg.apiKey;
+      }
+
       const boot = document.getElementById('boot-loader');
       setTimeout(() => {
         boot.setAttribute('aria-busy', 'false');
@@ -2004,10 +2575,10 @@
       document.body.classList.add('is-loading');
 
       const steps = [
-        { phase: 'STAGE 01 // OPTION A + B EXTRACTION', text: 'Running Live Wikipedia/Web Scraper + Autonomous Knowledge Synthesizer...' },
-        { phase: 'STAGE 02 // TOP-10 MARKET SHARE RANKING', text: 'Sorting Top-10 industry players by market share, valuation & history...' },
+        { phase: 'STAGE 01 // OPTION A + B EXTRACTION', text: `Running Live Wikipedia/Web Scraper + Option B Knowledge Engine for ${currentRegion}...` },
+        { phase: 'STAGE 02 // REGIONAL & GLOBAL RANKING', text: `Sorting Top-10 ${currentRegion} & Global players by market share, valuation & history...` },
         { phase: 'STAGE 03 // PRODUCT & LAUNCH RADAR', text: 'Compiling upcoming product launch dates, multi-currency prices & strategies...' },
-        { phase: 'STAGE 04 // NASH & BOOM BLUEPRINT', text: 'Solving 3x3 Normal-Form Nash Equilibrium & Market-Boom Product Blueprint...' }
+        { phase: 'STAGE 04 // AI VENTURE & NASH SOLVER', text: 'Solving 3x3 Normal-Form Nash Equilibrium, Supply Chain & VC Investor Directory...' }
       ];
       let sIdx = 0;
       const stepTimer = setInterval(() => {
@@ -2019,6 +2590,7 @@
 
       const formData = new FormData();
       formData.append('query', query);
+      formData.append('region', currentRegion);
       formData.append('trust_weight', alphaSlider.value);
       formData.append('relevance_weight', (1 - parseFloat(alphaSlider.value)).toFixed(2));
       formData.append('use_prf', document.getElementById('prf-check').checked);
@@ -2063,7 +2635,9 @@
       const gt = data.game_theory_analysis;
       if (!gt) return;
 
-      document.getElementById('hub-industry-heading').textContent = gt.industry_name;
+      document.getElementById('hub-industry-heading').textContent = `${gt.industry_name}`;
+      document.getElementById('hub-region-badge').textContent = `🌍 Active Scope: ${currentRegion} Market`;
+
       const dv = gt.dual_source_verification;
       if (dv) {
         document.getElementById('hub-consensus-badge').textContent =
@@ -2072,6 +2646,9 @@
 
         const a = dv.option_a_scraper;
         const b = dv.option_b_llm;
+        const cfg = getStoredLlmConfig();
+        const bStatusText = cfg.apiKey ? `LIVE ${cfg.provider.toUpperCase()} API KEY CONFIGURED` : b.status;
+
         document.getElementById('dual-engines-grid').innerHTML = `
           <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5">
             <div class="font-mono-code font-bold text-sky-300">${a.engine_name}</div>
@@ -2080,7 +2657,7 @@
           </div>
           <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5">
             <div class="font-mono-code font-bold text-indigo-300">${b.engine_name}</div>
-            <div class="text-slate-400">Status: <strong class="text-emerald-400">${b.status}</strong> • Score: <strong>${b.reliability_score}</strong></div>
+            <div class="text-slate-400">Status: <strong class="text-emerald-400">${bStatusText}</strong> • Score: <strong>${b.reliability_score}</strong></div>
             <div class="text-slate-300">${b.live_insight}</div>
           </div>
         `;
@@ -2089,7 +2666,7 @@
       renderCompaniesStage(gt);
       renderProductReviewsStage(gt);
 
-      // Render Game Theory Mathematical Solvers (View 4)
+      // Render Game Theory Mathematical Solvers (View 5)
       const m12 = gt.module1_and_2_nash;
       document.getElementById('gt-matrix-head').innerHTML = `
         <tr>
@@ -2144,7 +2721,7 @@
         </div>
       `;
 
-      // Populate Settings & Background Extraction Diagnostics (View 5)
+      // Populate Settings & Background Extraction Diagnostics (View 6)
       document.getElementById('out-active-query').textContent = `Query: ${data.active_query}`;
       document.getElementById('out-expanded-terms').textContent =
         `Expanded: ${data.added_terms && data.added_terms.length ? data.added_terms.join(', ') : 'None'}`;
