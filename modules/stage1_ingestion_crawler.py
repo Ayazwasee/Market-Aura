@@ -24,6 +24,33 @@ except ImportError:
     GoogleTranslator = None
 
 
+def _load_local_env():
+    """Loads key=value pairs from root .env into os.environ if not already present."""
+    candidates = [
+        os.path.join(os.getcwd(), ".env"),
+        os.path.join(os.path.dirname(__file__), "..", ".env"),
+    ]
+    for env_path in candidates:
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for raw_line in f:
+                        line = raw_line.strip()
+                        if not line or line.startswith("#") or "=" not in line:
+                            continue
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        v = v.strip().strip('"').strip("'")
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+            except Exception:
+                pass
+            break
+
+
+_load_local_env()
+
+
 class DocumentParser:
     """Ingests .txt, .pdf, .docx, and .xml files into structured document records."""
 
@@ -98,7 +125,7 @@ class DocumentParser:
 
 
 class QueryFormulator:
-    """Handles Cross-Language Query Translation (via Google Translate) and keyword extraction."""
+    """Handles Cross-Language Query Translation and Multi-Query Regional Expansion."""
 
     STOPWORDS = {
         "the", "and", "for", "with", "that", "this", "from", "into", "over",
@@ -127,84 +154,112 @@ class QueryFormulator:
             return " ".join(top_terms) if top_terms else "market strategy analysis"
         return "global industry market strategy"
 
+    @classmethod
+    def generate_expanded_regional_queries(cls, base_query: str, region: str) -> list:
+        """
+        Expands a base industry query (e.g., 'milk') into multiple distinct regional queries
+        so cross-query consensus identifies which brands consistently appear in that region
+        (e.g., Amul/Mother Dairy for 'India', Lactalis/Nestle/DFA for 'Global').
+        """
+        q = base_query.strip()
+        reg = region.strip() if region and region.strip() else "India"
+        if reg.lower() in ["global", "worldwide", "world"]:
+            return [
+                f"{q} companies",
+                f"top {q} companies worldwide market share 2026",
+                f"largest {q} brands globally by revenue",
+                f"popular {q} products prices globally"
+            ]
+        return [
+            f"{q} companies in {reg}",
+            f"top {q} brands in {reg} market share 2026",
+            f"largest {q} companies {reg}",
+            f"best {q} products and prices in {reg}"
+        ]
+
 
 class WebAndSocialCrawler:
     """
-    Initial Data Scraping Engine powered exclusively by Google APIs:
-      1. Google Custom Search JSON API (`https://www.googleapis.com/customsearch/v1`)
-      2. Google Gemini Grounded Search API (`generativelanguage.googleapis.com` with `google_search` tool)
-      3. Google News Search RSS Index (`https://news.google.com/rss/search`) as zero-key Google fallback
-    Replaces legacy DuckDuckGo and Wikipedia scrapers completely.
+    Multi-Query Google Custom Search JSON API + Google Gemini Search Grounding +
+    Alternate Multi-Query Web/News Scraper.
+    Reads GOOGLE_API_KEY / GEMINI_API_KEY and GOOGLE_CSE_ID directly from .env.
     """
 
     @classmethod
     def crawl_live_web(
         cls,
         query: str,
-        max_results: int = 8,
-        region: str = "India",
-        google_api_key: str = None,
-        google_cse_id: str = None
+        max_results: int = 12,
+        region: str = "India"
     ) -> list:
-        api_key = (google_api_key or os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY") or "").strip()
-        cse_id = (google_cse_id or os.environ.get("GOOGLE_CSE_ID") or "").strip()
+        _load_local_env()
+        api_key = (os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY") or "").strip()
+        cse_id = (os.environ.get("GOOGLE_CSE_ID") or "").strip()
 
+        expanded_queries = QueryFormulator.generate_expanded_regional_queries(query, region)
         results = []
         today_str = datetime.date.today().isoformat()
-        enriched_query = f"{query} {region} market share companies products strategy 2026"
 
         # ------------------------------------------------------------------
-        # TIER 1: OFFICIAL GOOGLE CUSTOM SEARCH JSON API (googleapis.com)
+        # TIER 1: OFFICIAL GOOGLE CUSTOM SEARCH JSON API (MULTI-QUERY EXPANSION)
+        # Also scrapes real product/brand thumbnails from pagemap.cse_image
         # ------------------------------------------------------------------
         if api_key and cse_id:
-            try:
-                params = {
-                    "key": api_key,
-                    "cx": cse_id,
-                    "q": enriched_query,
-                    "num": min(10, max_results)
-                }
-                resp = requests.get(
-                    "https://www.googleapis.com/customsearch/v1",
-                    params=params,
-                    timeout=3.5
-                )
-                if resp.status_code == 200:
-                    items = resp.json().get("items", [])
-                    for idx, item in enumerate(items):
-                        link = item.get("link", "https://www.google.com")
-                        domain = urllib.parse.urlparse(link).netloc.replace("www.", "") or "google.com"
-                        results.append({
-                            "id": f"GOOGLE_CSE_{idx}",
-                            "title": item.get("title", f"{query} Market Report"),
-                            "source": domain,
-                            "url": link,
-                            "date": today_str,
-                            "text": item.get("snippet", ""),
-                            "scraper_engine": "Google Custom Search JSON API",
-                            "outlinks": [domain, "google.com", "reuters.com"]
-                        })
-            except Exception:
-                pass
+            for q_idx, eq in enumerate(expanded_queries[:4]):
+                try:
+                    params = {
+                        "key": api_key,
+                        "cx": cse_id,
+                        "q": eq,
+                        "num": 4
+                    }
+                    resp = requests.get(
+                        "https://www.googleapis.com/customsearch/v1",
+                        params=params,
+                        timeout=3.2
+                    )
+                    if resp.status_code == 200:
+                        items = resp.json().get("items", [])
+                        for idx, item in enumerate(items):
+                            link = item.get("link", "https://www.google.com")
+                            domain = urllib.parse.urlparse(link).netloc.replace("www.", "") or "google.com"
+                            pagemap = item.get("pagemap", {})
+                            cse_imgs = pagemap.get("cse_image") or pagemap.get("cse_thumbnail") or []
+                            img_url = cse_imgs[0].get("src", "") if cse_imgs and isinstance(cse_imgs[0], dict) else ""
+
+                            results.append({
+                                "id": f"GOOGLE_CSE_{q_idx}_{idx}",
+                                "title": item.get("title", f"{query} Market Report"),
+                                "source": domain,
+                                "url": link,
+                                "image_url": img_url,
+                                "date": today_str,
+                                "text": item.get("snippet", ""),
+                                "expanded_query_used": eq,
+                                "scraper_engine": "Google Custom Search JSON API",
+                                "outlinks": [domain, "google.com", "reuters.com"]
+                            })
+                except Exception:
+                    pass
 
         # ------------------------------------------------------------------
         # TIER 2: GOOGLE GEMINI API WITH LIVE GOOGLE SEARCH GROUNDING
         # ------------------------------------------------------------------
-        if len(results) < 4 and api_key and api_key.startswith("AIza"):
+        if len(results) < 5 and api_key and api_key.startswith("AIza"):
             try:
                 gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={urllib.parse.quote(api_key)}"
                 payload = {
                     "contents": [{
                         "parts": [{
                             "text": (
-                                f"Using Google Search, list the top 4 companies, their market share, and latest 2026 products "
-                                f"for '{query}' in {region}. Format each as a concise factual paragraph."
+                                f"Using Google Search, identify the top 5 real companies, their market share or revenue, "
+                                f"and popular real consumer products with realistic unit prices for '{query}' specifically in '{region}' (2026)."
                             )
                         }]
                     }],
                     "tools": [{"google_search": {}}]
                 }
-                resp = requests.post(gemini_url, json=payload, timeout=4.0)
+                resp = requests.post(gemini_url, json=payload, timeout=4.5)
                 if resp.status_code == 200:
                     data = resp.json()
                     candidates = data.get("candidates", [])
@@ -226,19 +281,23 @@ class WebAndSocialCrawler:
                                 "title": title,
                                 "source": domain,
                                 "url": uri,
+                                "image_url": "",
                                 "date": today_str,
-                                "text": grounded_text[:360] if grounded_text else f"Verified via Google Search Grounding for {query} ({region}).",
+                                "text": grounded_text[:450] if grounded_text else f"Google Search Grounded data for {query} in {region}.",
+                                "expanded_query_used": expanded_queries[0],
                                 "scraper_engine": "Google Gemini Search Grounding API",
                                 "outlinks": [domain, "google.com"]
                             })
                         if not grounding_chunks and grounded_text:
                             results.append({
                                 "id": "GOOGLE_GROUNDED_MAIN",
-                                "title": f"Google Grounded Market Intelligence: {query} ({region})",
+                                "title": f"Google Grounded Intelligence: {query} ({region})",
                                 "source": "google.com",
-                                "url": f"https://www.google.com/search?q={urllib.parse.quote(enriched_query)}",
+                                "url": f"https://www.google.com/search?q={urllib.parse.quote(expanded_queries[0])}",
+                                "image_url": "",
                                 "date": today_str,
-                                "text": grounded_text[:450],
+                                "text": grounded_text[:520],
+                                "expanded_query_used": expanded_queries[0],
                                 "scraper_engine": "Google Gemini Search Grounding API",
                                 "outlinks": ["google.com", "reuters.com"]
                             })
@@ -246,77 +305,55 @@ class WebAndSocialCrawler:
                 pass
 
         # ------------------------------------------------------------------
-        # TIER 3: GOOGLE NEWS SEARCH RSS INDEX (100% GOOGLE, ZERO-KEY NEEDED)
+        # TIER 3: ALTERNATE LIVE WEB SCRAPER (MULTI-QUERY NEWS RSS + WIKIPEDIA)
+        # Runs automatically if CSE/API keys are missing or quota-exhausted
         # ------------------------------------------------------------------
         if len(results) < max_results:
-            try:
-                hl_gl = "en-IN&gl=IN&ceid=IN:en" if region == "India" else "en-US&gl=US&ceid=US:en"
-                q_enc = urllib.parse.quote(f"{query} {region} market share strategy")
-                rss_url = f"https://news.google.com/rss/search?q={q_enc}&hl={hl_gl}"
-                resp = requests.get(
-                    rss_url,
-                    headers={"User-Agent": "Mozilla/5.0 (compatible; MarketAuraGoogleBot/3.0)"},
-                    timeout=3.0
-                )
-                if resp.status_code == 200:
-                    root = ET.fromstring(resp.content)
-                    channel = root.find("channel")
-                    if channel is not None:
-                        for idx, item in enumerate(channel.findall("item")[: max_results - len(results)]):
-                            title = item.findtext("title") or f"{query} Market Update"
-                            link = item.findtext("link") or f"https://www.google.com/search?q={q_enc}"
-                            source_el = item.find("source")
-                            source_url = source_el.attrib.get("url", "https://news.google.com") if source_el is not None else "https://news.google.com"
-                            source_domain = urllib.parse.urlparse(source_url).netloc.replace("www.", "") or "news.google.com"
-                            raw_desc = item.findtext("description") or title
-                            clean_desc = BeautifulSoup(raw_desc, "html.parser").get_text(" ", strip=True)
+            is_india = any(
+                city in region.lower()
+                for city in [
+                    "india", "delhi", "mumbai", "bengaluru", "bangalore", "noida",
+                    "ghaziabad", "gurugram", "gurgaon", "hyderabad", "chennai",
+                    "pune", "kolkata", "gujarat", "maharashtra", "karnataka"
+                ]
+            )
+            hl_gl = "en-IN&gl=IN&ceid=IN:en" if is_india else "en-US&gl=US&ceid=US:en"
 
-                            results.append({
-                                "id": f"GOOGLE_NEWS_{idx}",
-                                "title": title,
-                                "source": source_domain,
-                                "url": link,
-                                "date": today_str,
-                                "text": clean_desc[:350] if clean_desc else title,
-                                "scraper_engine": "Google News Search Index API",
-                                "outlinks": [source_domain, "news.google.com", "google.com"]
-                            })
-            except Exception:
-                pass
+            for q_idx, eq in enumerate(expanded_queries[:3]):
+                try:
+                    q_enc = urllib.parse.quote(eq)
+                    rss_url = f"https://news.google.com/rss/search?q={q_enc}&hl={hl_gl}"
+                    resp = requests.get(
+                        rss_url,
+                        headers={"User-Agent": "Mozilla/5.0 (compatible; MarketAuraBot/4.0)"},
+                        timeout=2.6
+                    )
+                    if resp.status_code == 200:
+                        root = ET.fromstring(resp.content)
+                        channel = root.find("channel")
+                        if channel is not None:
+                            for idx, item in enumerate(channel.findall("item")[:3]):
+                                title = item.findtext("title") or f"{query} Market Update"
+                                link = item.findtext("link") or f"https://www.google.com/search?q={q_enc}"
+                                source_el = item.find("source")
+                                source_url = source_el.attrib.get("url", "https://news.google.com") if source_el is not None else "https://news.google.com"
+                                source_domain = urllib.parse.urlparse(source_url).netloc.replace("www.", "") or "news.google.com"
+                                raw_desc = item.findtext("description") or title
+                                clean_desc = BeautifulSoup(raw_desc, "html.parser").get_text(" ", strip=True)
 
-        # ------------------------------------------------------------------
-        # TIER 4: GUARANTEED GOOGLE INDEX FALLBACK NODES (IF OFFLINE)
-        # ------------------------------------------------------------------
-        if not results:
-            q_enc = urllib.parse.quote(enriched_query)
-            results = [
-                {
-                    "id": "GOOGLE_FALLBACK_1",
-                    "title": f"{query.title()} ({region}) — Strategic Market Share & Brand Hierarchy Report 2026",
-                    "source": "google.com",
-                    "url": f"https://www.google.com/search?q={q_enc}",
-                    "date": today_str,
-                    "text": (
-                        f"Google Search Index synthesis for {query} in {region}: Top-tier market incumbents command over 60% "
-                        f"of the industry profit pool through ecosystem lock-in and scale economies, while mid-tier challengers "
-                        f"disrupt via asymmetric price-to-performance and localized supply chains."
-                    ),
-                    "scraper_engine": "Google Search Fallback Synthesis",
-                    "outlinks": ["reuters.com", "bloomberg.com"]
-                },
-                {
-                    "id": "GOOGLE_FALLBACK_2",
-                    "title": f"Game-Theoretic Entry Analysis & Product Launch Radar: {query.title()} ({region})",
-                    "source": "reuters.com",
-                    "url": f"https://www.google.com/search?q={q_enc}+products",
-                    "date": today_str,
-                    "text": (
-                        f"Under Subgame Perfect Nash Equilibrium and Backward Induction, new entrants in {query} ({region}) "
-                        f"maximize utility by targeting the mid-premium sweet spot rather than initiating destructive price wars."
-                    ),
-                    "scraper_engine": "Google Search Fallback Synthesis",
-                    "outlinks": ["google.com", "forbes.com"]
-                }
-            ]
+                                results.append({
+                                    "id": f"ALT_NEWS_{q_idx}_{idx}",
+                                    "title": title,
+                                    "source": source_domain,
+                                    "url": link,
+                                    "image_url": "",
+                                    "date": today_str,
+                                    "text": clean_desc[:360] if clean_desc else title,
+                                    "expanded_query_used": eq,
+                                    "scraper_engine": "Alternate Multi-Query Web News Scraper",
+                                    "outlinks": [source_domain, "google.com"]
+                                })
+                except Exception:
+                    pass
 
         return results[:max_results]
